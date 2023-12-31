@@ -2,13 +2,15 @@ import Items from "./Items";
 
 export default class List
 {
-    item = new Items;
+    Name;
+    Price;
+    Quantity;
 
-    set item(item) {
-        if (item.price == null) throw new Error();
-
-        this.item = item;
+    //constructor
+    List(name, price, quantity)
+    {
+        this.Name = name;
+        this.Price = price;
+        this.Quantity = quantity;
     }
 }
-
-List.item = obj
