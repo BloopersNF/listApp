@@ -1,9 +1,9 @@
-export default class Item 
+export default class Items 
 {
     Price;
     Quantity;
     //constructor
-    Item(price, quantity)
+    Items(price, quantity)
     {
         this.Price = price;
         this.Quantity = quantity;

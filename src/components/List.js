@@ -1,8 +1,8 @@
-import Item from "./Item";
+import Items from "./Items";
 
 export default class List
 {
-    item = new Item;
+    item = new Items;
 
     set item(item) {
         if (item.price == null) throw new Error();
