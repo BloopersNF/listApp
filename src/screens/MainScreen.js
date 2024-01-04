@@ -9,11 +9,11 @@ Tab = createBottomTabNavigator();
 
 const MainScreen = () =>{
     return(
-    <Tab.Navigator>
-        <Tab.Screen name="Delete" component={DeleteScreen}/>
-        <Tab.Screen name="Home" component={HomeScreen}/>
-        <Tab.Screen name="Config" component={ConfigScreen}/>
-    </Tab.Navigator>
+        <Tab.Navigator>
+            <Tab.Screen name="Delete" component={DeleteScreen}/>
+            <Tab.Screen name="Home" component={HomeScreen}/>
+            <Tab.Screen name="Config" component={ConfigScreen}/>
+        </Tab.Navigator>
     )
 }
 export default MainScreen;

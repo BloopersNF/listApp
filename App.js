@@ -4,11 +4,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import MainScreen from './src/screens/mainScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import StackScreen from './src/screens/stackScreen';
 
 const App = () => {
   return (
     <NavigationContainer>
-      <MainScreen/>
+      <StackScreen/>
     </NavigationContainer>
   );
 }

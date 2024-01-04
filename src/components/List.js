@@ -1,16 +1,14 @@
-import Items from "./Items";
 
 export default class List
 {
-    Name;
-    Price;
-    Quantity;
-
-    //constructor
-    List(name, price, quantity)
+    constructor(name, items, totalPrice)
     {
         this.Name = name;
-        this.Price = price;
-        this.Quantity = quantity;
+        this.Items = items;
+        this.TotalPrice = totalPrice;
+    }
+    addItem(item)
+    {
+        this.Items.push(item);
     }
 }
