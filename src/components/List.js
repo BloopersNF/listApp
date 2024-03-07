@@ -12,4 +12,8 @@ export default class List
     {
         this.Items.push(item);
     }
+    removeItem(index)
+    {
+        this.Items.splice(index, 1);
+    }
 }

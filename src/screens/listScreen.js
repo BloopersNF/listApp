@@ -12,7 +12,6 @@ const ListScreen = ({route}) =>
     const [price, setPrice] = useState("");
     // acessando nome da lista e passando o valor para o header ter o nome da lista
     console.log(name);
-    this.props.navigation.setOptions({ title: name });
 
     const addItem = () =>
     {

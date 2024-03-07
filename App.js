@@ -5,7 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import MainScreen from './src/screens/mainScreen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StackScreen from './src/screens/stackScreen';
-import * as firebase from 'firebase';
+import firebase from 'firebase/compat/app';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOflUm0k7St1uYqMZo9ldmOpJJLGOr7b0",
