@@ -3,6 +3,8 @@ import { Text, StyleSheet, View, TouchableOpacity, TextInput } from "react-nativ
 import List from "../components/List";
 import { useState } from "react";
 import Item from "../components/Item";
+import { FlatList } from 'react-native';
+import firebase from 'firebase/compat/app';
 
 const ListScreen = ({route}) => 
 {
@@ -28,35 +30,43 @@ const ListScreen = ({route}) =>
         setList(list);
     }
 
+    const saveList = () => 
+    {
+        firebase.database().ref('lists/' + list.Name).set(list);
+    }
+
+    const handleSave = () =>
+    {
+        addItem();
+        saveList();
+    }
+
     return (
-        <View >
-            <Text >Lista de Compras</Text>
-            <View >
-                {
-                    list.Items.map((item, index) => 
-                    {
-                        return (
-                            <View key={index}>
-                                <Text >{item.name}</Text>
-                                <Text >R$ {item.price}</Text>
-                                <Text >qtt {item.quantity}</Text>
-                                <TouchableOpacity onPress={() => removeItem(index)}>
-                                    <Text >X</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )
-                    })
-                }
-            </View>
-            <View >
-                <TextInput placeholder="Item" value={item} onChangeText={(text) => setItem(text)}/>
-                <TextInput  placeholder="Preço" value={price} onChangeText={(text) => setPrice(text)}/>
-                <TouchableOpacity onPress={addItem}>
-                    <Text >Adicionar</Text>
+        <View>
+            <Text>Lista de Compras</Text>
+            <FlatList
+                data={list.Items}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => (
+                    <View>
+                        <Text>{item.name}</Text>
+                        <Text>R$ {item.price}</Text>
+                        <Text>qtt {item.quantity}</Text>
+                        <TouchableOpacity onPress={() => removeItem(index)}>
+                            <Text>X</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            />
+            <View>
+                <TextInput placeholder="Item" value={item} onChangeText={(text) => setItem(text)} />
+                <TextInput placeholder="Preço" value={price} onChangeText={(text) => setPrice(text)} />
+                <TouchableOpacity onPress={handleSave}>
+                    <Text>Adicionar</Text>
                 </TouchableOpacity>
             </View>
-            <Text >Total: R$ {list.TotalPrice}</Text>
+            <Text>Total: R$ {list.TotalPrice}</Text>
         </View>
-    )    
+    )
 }
 export default ListScreen;

@@ -14,7 +14,11 @@ const HomeScreen = ({ navigation }) => {
     return(
         <View>
             <Text>Home</Text>    
-            <TouchableOpacity onPress={() => setModalVisible(true)}><Text>Criar</Text></TouchableOpacity>        
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <View style={styles.add}>
+                    <Text>Criar</Text>
+                </View>
+            </TouchableOpacity>        
 
             <Modal
                 animationType="slide"
@@ -69,6 +73,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         padding: 10,
     },
+    add: {
+        backgroundColor: 'blue',
+        padding: 10,
+        margin: 10,
+        alignItems: 'center',
+        borderRadius: 10
+    }
 });
 
 export default HomeScreen;

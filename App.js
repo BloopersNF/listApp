@@ -2,14 +2,14 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import MainScreen from './src/screens/mainScreen';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOflUm0k7St1uYqMZo9ldmOpJJLGOr7b0",
   authDomain: "listapp-ce96d.firebaseapp.com",
+  databaseURL: "https://listapp-ce96d-default-rtdb.firebaseio.com/",
   projectId: "listapp-ce96d",
   storageBucket: "listapp-ce96d.appspot.com",
   messagingSenderId: "484016225747",
