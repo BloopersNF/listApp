@@ -1,20 +1,42 @@
 import React, { useState } from "react";
-import { Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAll } from "firebase/remote-config";
+
 
 const HomeScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [listName, setListName] = useState('');
+    const [keys, setKeys] = useState([]);
+    getAllKeys = async () => {
+        try {
+            all = await AsyncStorage.getAllKeys();
+            setKeys(all);
+        } catch(e) {
+            console.log(e);
+        }
+        return keys;
+    }
 
+    getAllKeys();
+    
     const createList = () => {
         setModalVisible(false);
         navigation.navigate('List', {name: listName});
         setListName('');
     };
-
+    
     return(
         <View>
-            <Text>Home</Text>    
-            <TouchableOpacity onPress={() => setModalVisible(true)}><Text>Criar</Text></TouchableOpacity>        
+            <TouchableOpacity onPress={() => setModalVisible(true)}><Text>Criar</Text></TouchableOpacity>   
+            <FlatList
+                data={keys}
+                renderItem={({item}) =>
+                    
+                    <Text>{item}</Text>
+                }
+                keyExtractor={(item) => item}
+            />     
 
             <Modal
                 animationType="slide"
@@ -36,6 +58,7 @@ const HomeScreen = ({ navigation }) => {
                     </View>
                 </View>
             </Modal>
+        
         </View>
     )
 }
