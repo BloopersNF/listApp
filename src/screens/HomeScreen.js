@@ -1,7 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CreateButton from "../components/createButton";
+import Icon from "react-native-vector-icons/AntDesign";
+import List from "../components/List";
 
+const removeData = async (key) => {
+    try {
+        await AsyncStorage.removeItem(key);
+    }
+    catch(e) {
+        console.log(e);
+    }
+}
+
+const storeData = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem(key, jsonValue)
+    }
+    catch (e) {
+        console.log(e);
+        }
+    }
 
 const HomeScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
@@ -17,7 +38,10 @@ const HomeScreen = ({ navigation }) => {
         return keys;
     }
 
-    getAllKeys();
+    useEffect(() => {
+        getAllKeys();
+    }, []);
+
 
     const closeModal = () => {
         setModalVisible(false);
@@ -26,24 +50,36 @@ const HomeScreen = ({ navigation }) => {
     const createList = () => {
         setModalVisible(false);
         navigation.navigate('List', {name: listName});
+        storeData(listName, new List(listName, [], 0));
         setListName('');
+        setKeys(getAllKeys());
     };
     
     return(
-        <View>
-            <TouchableOpacity onPress={() => setModalVisible(true)}><Text>Criar</Text></TouchableOpacity>   
-            <FlatList
-                data={keys}
-                renderItem={({item}) =>
-                        <TouchableOpacity onPress={() => navigation.navigate('List', {name: item})}>
-                            <View style={{padding: 10, borderColor: "#000", borderWidth: 1}}>
-                                <Text>{item}</Text>
-                            </View>
-                        </TouchableOpacity>
+        <View style={{position: "relative", height: "100%", width: "100%", backgroundColor:"#eee"}}>
+            <View>
+                <FlatList
+                    data={keys}
+                    renderItem={({item}) =>
+                            <TouchableOpacity onPress={() => navigation.navigate('List', {name: item})}>
+                                <View style={styles.listItem}>
+                                    <Text>{item}</Text>
+                                    <TouchableOpacity onPress={() => {
+                                        removeData(item);
+                                        setKeys(getAllKeys());
+                                    }}>
+                                        <Icon name="delete" size={24} color="#e22"/>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableOpacity>
 
-                }
-                keyExtractor={(item) => item}
-            />     
+                    }
+                    keyExtractor={(item) => item}
+                />     
+            </View>
+            <View style={{position:"absolute", bottom:10, right:10}}>
+                <CreateButton method={() => setModalVisible(true)}/>
+            </View>
 
             <Modal
                 animationType="slide"
@@ -100,6 +136,17 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         padding: 10,
     },
+    listItem: {
+        padding: 20,
+        borderColor: "#fff",
+        borderWidth: 1,
+        backgroundColor: "#fff",
+        margin: 5,
+        borderRadius: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    }
 });
 
 export default HomeScreen;
