@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getAll } from "firebase/remote-config";
 
 
 const HomeScreen = ({ navigation }) => {
@@ -19,6 +18,10 @@ const HomeScreen = ({ navigation }) => {
     }
 
     getAllKeys();
+
+    const closeModal = () => {
+        setModalVisible(false);
+    }
     
     const createList = () => {
         setModalVisible(false);
@@ -32,8 +35,12 @@ const HomeScreen = ({ navigation }) => {
             <FlatList
                 data={keys}
                 renderItem={({item}) =>
-                    
-                    <Text>{item}</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('List', {name: item})}>
+                            <View style={{padding: 10, borderColor: "#000", borderWidth: 1}}>
+                                <Text>{item}</Text>
+                            </View>
+                        </TouchableOpacity>
+
                 }
                 keyExtractor={(item) => item}
             />     
@@ -43,7 +50,7 @@ const HomeScreen = ({ navigation }) => {
                 transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
-                    setModalVisible(!modalVisible);
+                    closeModal();
                 }}
             >
                 <View style={styles.centeredView}>
@@ -55,6 +62,7 @@ const HomeScreen = ({ navigation }) => {
                             value={listName}
                         />
                         <Button onPress={createList} title="Criar Lista" />
+                        <Button onPress={closeModal} title="Voltar" />
                     </View>
                 </View>
             </Modal>

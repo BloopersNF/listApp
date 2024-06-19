@@ -8,8 +8,8 @@ const Stack = createStackNavigator();
 
 const StackScreen = ({navigation}) =>{
     return(
-        <Stack.Navigator>
-            <Stack.Screen name="Home" component={MainScreen}/>
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+            <Stack.Screen name="Main" component={MainScreen} />
             <Stack.Screen name="List" component={ListScreen}/>
         </Stack.Navigator>
     )
