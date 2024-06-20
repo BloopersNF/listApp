@@ -1,7 +1,7 @@
 import React from "react";
-import { Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView} from "react-native";
+import {Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView} from "react-native";
 import List from "../components/List";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Item from "../components/Item";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -69,6 +69,10 @@ const ListScreen = ({route}) =>
         });
     }, []);
     const addItem = async () => {
+        /*if(item === "" || price === "" || quantity === "") {
+            alert("Preencha todos os campos para adicionar um item.");
+            return;
+        }*/
         list.Items.push(new Item(item, price, quantity)); // adiciona um item na lista
         const newList = {...list}; // cria uma nova cópia do estado atual
         setList(newList); // atualiza o estado com a nova lista
@@ -76,6 +80,7 @@ const ListScreen = ({route}) =>
         setPrice("");
         setQuantity("");
         await storeData(name, newList);
+        flatList.current.scrollToEnd()
     }
 
     const removeItem = async (index) => {
@@ -88,61 +93,91 @@ const ListScreen = ({route}) =>
     }
 
     console.log(list);
+    const flatList = useRef();
 
 
-    return (
+
+return (
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{flex:1, backgroundColor:"#eee"}}>
         <SafeAreaView style={{flex:1, backgroundColor:"#eee"}} >
-            <View>
-                <Text>Lista de Compras</Text>
-                <FlatList
-                    data={list.Items}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item, index }) => (
-                        <View style={{flexDirection: "row", alignItems:"center", justifyContent:"center" }}>
-                            <TouchableOpacity style={{margin:5}}onPress={() => { item.checked = !item.checked; setList({...list}); storeData(name, list) }}>
-                                {item.checked ?
-                                <Icon name="checkcircle" size={30} color="#4151E1"></Icon>:
-                                <View style={styles.checkCircle}></View>}
-                            </TouchableOpacity>
+            <FlatList
+                ref ={flatList}
+                initialNumToRender={14}
+                keyboardDismissMode="none"
+                data={list.Items}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => (
+                    <View style={{flexDirection: "row", alignItems:"center", justifyContent:"center" }}>
+                        <TouchableOpacity style={{margin:5}} onPress={() => { item.checked = !item.checked; setList({...list}); storeData(name, list) }}>
+                            {item.checked ?
+                            <Icon name="checkcircle" size={30} color="#4151E1"></Icon>:
+                            <View style={styles.checkCircle}></View>}
+                        </TouchableOpacity>
 
-                            <View key={index} style={styles.itemBox}>
-                                <Text>{item.name}</Text>
-                                <Text>R$ {item.price}</Text>
-                                <Text>qtt {item.quantity}</Text>
-                                <TouchableOpacity onPress={() => removeItem(index)}>
-                                    <Icon name="delete" size={20} color="#f00"/>
-                                </TouchableOpacity>
+                        <View key={index} style={styles.itemBox}>
+                            <View style={styles.description}>
+                                <Text numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
                             </View>
+                            <View style={styles.description}>
+                                <Text numberOfLines={1} ellipsizeMode="tail">${item.price}</Text>
+                            </View>
+                            <View style={styles.description}>
+                                <Text numberOfLines={1} ellipsizeMode="tail">{item.quantity}</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => removeItem(index)}>
+                                <Icon name="delete" size={20} color="#f00"/>
+                            </TouchableOpacity>
                         </View>
-                    )}
+                    </View>
+                )}
+                ListFooterComponent={() => (
+                    list.Items.length > 0 ?
+                    <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
+                        <Text style={{color:"#2a2"}}>Total: $ {list.TotalPrice}</Text>
+                        <Text style={{color:"#2a2"}}>Total marcados: $ {list.TotalPrice}</Text>
+                        <Text style={{color:"#2a2"}}>Total desmarcados: $ {list.TotalPrice}</Text>
+                    </View> : null
+                )}
+                ListEmptyComponent={() => (
+                    <View style={{alignItems:"center", justifyContent:"center", margin:100}}>
+                        <Icon name="filetext1" size={80} color="#bbb"></Icon>
+                        <Text style={{color:"#bbb", marginTop:20}} >Sua lista está vazia.</Text>
+                    </View>
+                )
+                }
                 />
-                <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
-                    <TextInput
-                        placeholder="Item"
-                        value={item}
-                        onChangeText={(text) => setItem(text)}
-                        style={styles.itemInput}
-                    />
-                    <TextInput
-                        placeholder="preço"
-                        value={price}
-                        onChangeText={(text) => setPrice(text)}
-                        style={styles.itemPrice}
-                    />
-                    <TextInput
-                        placeholder="n"
-                        value={quantity}
-                        onChangeText={(text) => setQuantity(text)}
-                        style={styles.itemPrice}
-                    />
-                    <TouchableOpacity onPress={addItem}>
-                        <Icon name="pluscircle" size={30} color="#2e2"></Icon>
-                    </TouchableOpacity>
+                <View>
+                    <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
+                        <TextInput
+                            placeholder="Item"
+                            value={item}
+                            onChangeText={(text) => setItem(text)}
+                            style={styles.itemInput}
+                        />
+                        <TextInput
+                            initialValue={0}
+                            placeholder="preço"
+                            value={price}
+                            onChangeText={(text) => setPrice(text)}
+                            style={styles.itemPrice}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            initialValue={1}
+                            placeholder="n"
+                            value={quantity}
+                            onChangeText={(text) => setQuantity(text)}
+                            style={styles.itemPrice}
+                            keyboardType="numeric"
+                        />
+                        <TouchableOpacity onPress={addItem}>
+                            <Icon name="pluscircle" size={30} color="#2e2"></Icon>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                <Text>Total: R$ {list.TotalPrice}</Text>
-            </View>
         </SafeAreaView>
-    );
+    </KeyboardAvoidingView>
+);
 }
 styles = StyleSheet.create({
     checkCircle: {
@@ -178,6 +213,7 @@ styles = StyleSheet.create({
 
     },
     itemPrice: {
+        width: "15%",
         padding: 10,
         borderColor: "#fff",
         borderWidth: 1,
@@ -187,6 +223,12 @@ styles = StyleSheet.create({
         alignItems: "center",
         
 
+    },
+    description: {
+        width: "25%",
+        padding: 0,
+        borderColor: "#fff",
+        backgroundColor:"#fff"
     }
 })
 

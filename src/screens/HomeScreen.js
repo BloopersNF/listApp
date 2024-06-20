@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Swipeable } from 'react-native-gesture-handler';
 import CreateButton from "../components/createButton";
 import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
@@ -61,17 +62,17 @@ const HomeScreen = ({ navigation }) => {
                 <FlatList
                     data={keys}
                     renderItem={({item}) =>
-                            <TouchableOpacity onPress={() => navigation.navigate('List', {name: item})}>
-                                <View style={styles.listItem}>
-                                    <Text>{item}</Text>
-                                    <TouchableOpacity onPress={() => {
-                                        removeData(item);
-                                        setKeys(getAllKeys());
-                                    }}>
-                                        <Icon name="delete" size={24} color="#e22"/>
-                                    </TouchableOpacity>
-                                </View>
-                            </TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('List', {name: item})}>
+                            <View style={styles.listItem}>
+                                <Text>{item}</Text>
+                                <TouchableOpacity onPress={() => {
+                                    removeData(item);
+                                    setKeys(getAllKeys());
+                                }}>
+                                    <Icon name="delete" size={24} color="#e22"/>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
 
                     }
                     keyExtractor={(item) => item}

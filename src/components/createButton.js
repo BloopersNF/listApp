@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
         height: 65,
         borderRadius: "50%",
         backgroundColor: '#4151E1', // change this to a bright color
-        bottom: 10,
+        bottom: 65,
         right: 10,
     }
 })
