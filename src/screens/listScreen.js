@@ -34,7 +34,6 @@ const ListScreen = ({route}) =>
     const renderListData = async () => {
         try {
             const listData = await getData(name);
-            console.log("listData", listData);
             return listData;
         }
         catch(e) {
@@ -58,9 +57,6 @@ const ListScreen = ({route}) =>
         })
     }
 
-    // acessando nome da lista e passando o valor para o header ter o nome da lista
-    console.log(name);
-
     useEffect(() => {
         renderListData().then((data) => {
             if (data != null) {
@@ -73,8 +69,11 @@ const ListScreen = ({route}) =>
             alert("Preencha todos os campos para adicionar um item.");
             return;
         }*/
-        list.Items.push(new Item(item, price, quantity)); // adiciona um item na lista
+        const itemPrice = parseFloat(price.replace(',', '.')) * parseFloat(quantity.replace(',', '.'));
         const newList = {...list}; // cria uma nova cópia do estado atual
+        newList.TotalPrice += itemPrice;
+        newList.TotalUncheckedPrice += itemPrice;
+        newList.Items.push(new Item(item, price.replace(',', '.'), quantity.replace(',', '.'))); // adiciona um item na lista
         setList(newList); // atualiza o estado com a nova lista
         setItem("");
         setPrice("");
@@ -84,15 +83,27 @@ const ListScreen = ({route}) =>
     }
 
     const removeItem = async (index) => {
-        list.Items.splice(index, 1); // remove um item da lista
-        const newList = {...list}; // cria uma nova cópia do estado atual
-        setList(newList); // atualiza o estado com a nova lista
+        const newList = {...list}; 
+        newList.TotalPrice -=  newList.Items[index].price * newList.Items[index].quantity;
+        newList.Items[index].checked ? newList.TotalCheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalUncheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
+        console.log(newList.TotalPrice);
+        newList.Items.splice(index, 1); 
+        setList(newList);
         await storeData(name, newList);
         let datas = await getData(name);
         console.log(datas);
     }
+    const priceCheckItem = async (index) => {
+        const newList = {...list};
+        newList.Items[index].checked = !newList.Items[index].checked;
+        newList.Items[index].checked ? newList.TotalCheckedPrice += newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalUncheckedPrice += newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
+        newList.Items[index].checked ? newList.TotalUncheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalCheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
+        setList(newList);
+        await storeData(name, newList);
+    }
+        
 
-    console.log(list);
+    //console.log(list);
     const flatList = useRef();
 
 
@@ -108,7 +119,7 @@ return (
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item, index }) => (
                     <View style={{flexDirection: "row", alignItems:"center", justifyContent:"center" }}>
-                        <TouchableOpacity style={{margin:5}} onPress={() => { item.checked = !item.checked; setList({...list}); storeData(name, list) }}>
+                        <TouchableOpacity style={{margin:5}} onPress={() => priceCheckItem(index)}>
                             {item.checked ?
                             <Icon name="checkcircle" size={30} color="#4151E1"></Icon>:
                             <View style={styles.checkCircle}></View>}
@@ -134,8 +145,8 @@ return (
                     list.Items.length > 0 ?
                     <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
                         <Text style={{color:"#2a2"}}>Total: $ {list.TotalPrice}</Text>
-                        <Text style={{color:"#2a2"}}>Total marcados: $ {list.TotalPrice}</Text>
-                        <Text style={{color:"#2a2"}}>Total desmarcados: $ {list.TotalPrice}</Text>
+                        <Text style={{color:"#2a2"}}>Total marcados: $ {list.TotalCheckedPrice}</Text>
+                        <Text style={{color:"#2a2"}}>Total desmarcados: $ {list.TotalUncheckedPrice}</Text>
                     </View> : null
                 )}
                 ListEmptyComponent={() => (

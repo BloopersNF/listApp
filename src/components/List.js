@@ -6,6 +6,8 @@ export default class List
         this.Name = name;
         this.Items = items;
         this.TotalPrice = totalPrice;
+        this.TotalCheckedPrice = totalPrice;
+        this.TotalUncheckedPrice = totalPrice;
         this.Checked = checked;
     }
     addItem(item)
