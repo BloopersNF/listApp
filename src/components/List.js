@@ -1,14 +1,14 @@
 
 export default class List
 {
-    constructor(name, items, totalPrice, checked = false)
+    constructor(name, items, totalPrice, deleted = false)
     {
         this.Name = name;
         this.Items = items;
         this.TotalPrice = totalPrice;
         this.TotalCheckedPrice = totalPrice;
         this.TotalUncheckedPrice = totalPrice;
-        this.Checked = checked;
+        this.Deleted = deleted;
     }
     addItem(item)
     {

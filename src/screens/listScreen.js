@@ -44,7 +44,7 @@ const ListScreen = ({route}) =>
     const [list, setList] = useState(new List(name, [], 0));
     const [item, setItem] = useState("");
     const [price, setPrice] = useState("");
-    const [quantity, setQuantity] = useState(0);
+    const [quantity, setQuantity] = useState("1");
     const [totalPrice, setTotalPrice] = useState(0);
     const [checkList, setCheckList] = useState([]);
 
@@ -65,10 +65,16 @@ const ListScreen = ({route}) =>
         });
     }, []);
     const addItem = async () => {
-        /*if(item === "" || price === "" || quantity === "") {
+        if(item === "" || price === "") {
             alert("Preencha todos os campos para adicionar um item.");
             return;
-        }*/
+        }
+        if(quantity === "")
+        {
+            const newQuantity = "1";
+            setQuantity(newQuantity);
+            return;
+        }
         const itemPrice = parseFloat(price.replace(',', '.')) * parseFloat(quantity.replace(',', '.'));
         const newList = {...list}; // cria uma nova cópia do estado atual
         newList.TotalPrice += itemPrice;
@@ -77,7 +83,6 @@ const ListScreen = ({route}) =>
         setList(newList); // atualiza o estado com a nova lista
         setItem("");
         setPrice("");
-        setQuantity("");
         await storeData(name, newList);
         flatList.current.scrollToEnd()
     }
@@ -144,9 +149,12 @@ return (
                 ListFooterComponent={() => (
                     list.Items.length > 0 ?
                     <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
-                        <Text style={{color:"#2a2"}}>Total: $ {list.TotalPrice}</Text>
-                        <Text style={{color:"#2a2"}}>Total marcados: $ {list.TotalCheckedPrice}</Text>
-                        <Text style={{color:"#2a2"}}>Total desmarcados: $ {list.TotalUncheckedPrice}</Text>
+                        <View style={{flexDirection: "row"}}>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total marcados: $ {list.TotalCheckedPrice}</Text>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}> + </Text>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total desmarcados: $ {list.TotalUncheckedPrice}</Text>
+                        </View>
+                        <Text style={{color:"#2a2", fontWeight:"bold"}}>Preço total: $ {list.TotalPrice}</Text>
                     </View> : null
                 )}
                 ListEmptyComponent={() => (
