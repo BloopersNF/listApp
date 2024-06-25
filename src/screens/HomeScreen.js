@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
+import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CreateButton from "../components/createButton";
 import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
+import { useFocusEffect } from '@react-navigation/native';
 
 const getData = async (key) => {
     try {
@@ -14,21 +15,6 @@ const getData = async (key) => {
         console.log(e);
     }
 }
-
-const renderListData = async key => {
-    try {
-        const listData = await getData(key);
-        return listData;
-    }
-    catch(e) {
-        console.log(e);
-    }
-}
-
-
-
-
-
 
 const storeData = async (key, value) => {
     try {
@@ -56,30 +42,12 @@ const HomeScreen = ({ navigation }) => {
         return keys;
     }
 
-    const actualList = async (key) => {
-        renderListData(key).then((data) => {
-            if (data != null) {
-                const newLists = [...lists, data];
-                setLists(newLists);
-            }
-        });
-    }
     const fetchLists = async () => {
         const fetchedKeys = await getAllKeys();
         const fetchedLists = await Promise.all(fetchedKeys.map(key => getData(key)));
         setLists(fetchedLists.filter(list => list !== null));
     };
 
-    const removeData = async (key) => {
-        try {
-            await AsyncStorage.removeItem(key);
-            setLists(lists.filter(list => list.Name !== key));
-            fetchLists();
-        }
-        catch(e) {
-            console.log(e);
-        }
-    }
 
     useEffect(() => {
         getAllKeys();
@@ -90,26 +58,33 @@ const HomeScreen = ({ navigation }) => {
         fetchLists();
     }, [keys.length]);
 
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchLists();
+        }, [])
+    );
+
 
     const closeModal = () => {
         setModalVisible(false);
     }
     
-    const createList = async () => {
+    const createList = async () => { 
         if(listName == '') 
         {
-                alert("Nome da lista inválido");
+                Alert.alert("Nome da lista inválido");
                 return;
         }
         else if(keys.includes(listName))
         {
-            alert("Nome da lista já existe");
+            Alert.alert("Nome da lista já existe");
             return;
         }
         storeData(listName, new List(listName, [], 0));
         setListName('');
         const allKeys = await getAllKeys();
         setKeys(allKeys);
+        await fetchLists();
         setModalVisible(false);
         navigation.navigate('List', {name: listName});
     };
@@ -121,26 +96,37 @@ const HomeScreen = ({ navigation }) => {
                     data={Object.keys(lists)}
                     renderItem={({item}) =>{
 
-                        if (lists[item].Deleted ==false)
+                        if (!lists[item].Deleted)
                             {
                                 return(
-                                    <TouchableOpacity onPress={() => navigation.navigate('List', {name: lists[item].Name})}>
-                                        <View style={styles.listItem}>
-                                            <Text>{lists[item].Name}</Text>
-                                            <TouchableOpacity onPress={() => {
-                                                //lists[item].Deleted = true;
-                                                removeData(lists[item].Name);
-                                                setKeys(getAllKeys());
-                                            }}>
-                                                <Icon name="delete" size={24} color="#e22"/>
-                                            </TouchableOpacity>
+                                    <TouchableOpacity style={styles.listItem} onPress={() => navigation.navigate('List', {name: lists[item].Name})}>
+                                        <View >
+                                            <View style={{flexDirection: "row", width:"100vw", justifyContent: "space-between", alignItems:"center"}}>
+                                                <Text>{lists[item].Name}</Text>
+                                                <TouchableOpacity onPress={() => {
+                                                    const deletedList = lists[item];
+                                                    deletedList.Deleted = true;
+                                                    console.log(deletedList);
+                                                    storeData(deletedList.Name, deletedList);
+                                                    fetchLists();
+                                                }}>
+                                                    <Icon name="delete" size={24} color="#e22"/>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                        <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
+                                            <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Items.length} items</Text>
+                                            <Text style={{fontSize:10, color:"#bbb"}}>Data</Text>
+                                            <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>${lists[item].TotalPrice}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 )
-                            }
+                            } 
                         }
                     }
                     keyExtractor={(item) => item}
+                    initialNumToRender={10}
+                    removeClippedSubviews={true}
                 />     
             </View>
             <View style={{position:"absolute", bottom:10, right:10}}>
@@ -218,9 +204,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         margin: 5,
         borderRadius: 10,
-        flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
     }
 });
 

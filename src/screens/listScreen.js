@@ -75,7 +75,7 @@ const ListScreen = ({route}) =>
             setQuantity(newQuantity);
             return;
         }
-        const itemPrice = parseFloat(price.replace(',', '.')) * parseFloat(quantity.replace(',', '.'));
+        const itemPrice = parseFloat(price.replace(',', '.')).toFixed(2) * parseFloat(quantity.replace(',', '.')).toFixed(2);
         const newList = {...list}; // cria uma nova cópia do estado atual
         newList.TotalPrice += itemPrice;
         newList.TotalUncheckedPrice += itemPrice;

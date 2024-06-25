@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
+import {Text, StyleSheet, View, TouchableOpacity, FlatList, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
-import List from "../components/List";
-import { getAll } from "firebase/remote-config";
+import { useFocusEffect } from '@react-navigation/native';
 
 //tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
     const [keys, setKeys] = useState([]);
-    const [lists, setLists] = useState([]);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [listName, setListName] = useState('');
     const [deletedLists, setDeletedLists] = useState([]);
 
     //função que pega todas as chaves do async storage
@@ -31,7 +27,6 @@ const DeleteScreen = ({ navigation }) => {
             let lists = [];
             for (let i = 0; i < keys.length; i++) {
                 let list = await AsyncStorage.getItem(keys[i]);
-                console.log(lists);
                 if (list != null) {
                     list = JSON.parse(list);
 
@@ -64,40 +59,56 @@ const DeleteScreen = ({ navigation }) => {
             list = JSON.parse(list);
             list.Deleted = false;
             await AsyncStorage.setItem(key, JSON.stringify(list));
+            getAllKeys();
             getDeletedLists();
         } catch(e) {
             console.log(e);
         }
     }
-
-    //renderizar as listas deletadas numa flatlist
-    const renderItem = ({ item }) => (
-        <View style={styles.listItem}>
-            <TouchableOpacity onPress={() => navigation.navigate('List', {list: item})}>
-                <Text style={styles.listName}>{deletedLists[item].Name}</Text>
-            </TouchableOpacity>
-            <View style={styles.buttons}>
-                <TouchableOpacity onPress={() => restoreList(item.Name)}>
-                    <Icon name="reload1" size={20} color="#000" />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => deleteList(item.Name)}>
-                    <Icon name="delete" size={20} color="#000" />
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
     
     useEffect(() => {
-        getAllKeys();
-        getDeletedLists();
+        const fetchData = async () => {
+            await getAllKeys();
+            await getDeletedLists();
+        }
+        fetchData();
     }
-    , []); 
-    
+    , [keys.length]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const fetchData = async () => {
+                getAllKeys();
+                getDeletedLists();
+            }
+            fetchData();
+        }, [])
+    );
+
     return (
         <View style={styles.container}>
             <FlatList
                 data={Object.keys(deletedLists)}
-                renderItem={renderItem}
+                renderItem={({ item }) => {
+                    if (deletedLists[item].Deleted)
+                        {
+                            return(
+                            <View style={styles.listItem}>
+                                <TouchableOpacity onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}>
+                                    <Text style={styles.listName}>{deletedLists[item].Name}</Text>
+                                </TouchableOpacity>
+                                <View style={styles.buttons}>
+                                    <TouchableOpacity onPress={() => restoreList(deletedLists[item].Name)}>
+                                        <Icon name="reload1" size={20} color="#000" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => deleteList(deletedLists[item].Name)}>
+                                        <Icon name="delete" size={20} color="#000" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            );
+                        }
+                    }}
                 keyExtractor={item => item}
             />
         </View>
