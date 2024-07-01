@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
+import {SafeAreaView ,Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CreateButton from "../components/createButton";
 import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
 import { useFocusEffect } from '@react-navigation/native';
+
 
 const getData = async (key) => {
     try {
@@ -65,6 +66,7 @@ const HomeScreen = ({ navigation }) => {
     );
 
 
+
     const closeModal = () => {
         setModalVisible(false);
     }
@@ -90,7 +92,8 @@ const HomeScreen = ({ navigation }) => {
     };
     
     return(
-        <View style={{position: "relative", height: "100%", width: "100%", backgroundColor:"#eee"}}>
+        <SafeAreaView style={{position: "relative", height: "100%", width: "100%", backgroundColor:"#eee"}}>
+            
             <View>
                 <FlatList
                     data={Object.keys(lists)}
@@ -162,7 +165,7 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             </KeyboardAvoidingView>
             </Modal>
-        </View>
+        </SafeAreaView>
     )
 }
 

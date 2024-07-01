@@ -73,7 +73,7 @@ const DeleteScreen = ({ navigation }) => {
         }
         fetchData();
     }
-    , [keys.length]);
+    , []);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -93,24 +93,35 @@ const DeleteScreen = ({ navigation }) => {
                     if (deletedLists[item].Deleted)
                         {
                             return(
-                            <View style={styles.listItem}>
-                                <TouchableOpacity onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}>
+                                <TouchableOpacity style={styles.listItem} onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}>
                                     <Text style={styles.listName}>{deletedLists[item].Name}</Text>
-                                </TouchableOpacity>
-                                <View style={styles.buttons}>
-                                    <TouchableOpacity onPress={() => restoreList(deletedLists[item].Name)}>
+                                    <View style={styles.buttons}>
+                                        <TouchableOpacity onPress={() => restoreList(deletedLists[item].Name)}>
                                         <Icon name="reload1" size={20} color="#000" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => deleteList(deletedLists[item].Name)}>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => {
+                                            Alert.alert(
+                                                "Você realmente deseja deletar esta lista permanentemente?",
+                                                "",
+                                                [
+                                                    {
+                                                        text: "Cancelar",
+                                                        style: "cancel"
+                                                    },
+                                                    { text: "Deletar", onPress: () => deleteList(deletedLists[item].Name) }
+                                                ],
+                                                { cancelable: false }
+                                            );
+                                        }}>
                                         <Icon name="delete" size={20} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            );
-                        }
-                    }}
-                keyExtractor={item => item}
-            />
+                                        </TouchableOpacity>
+                                    </View>
+                                </TouchableOpacity>
+                                );
+                            }
+                        }}
+                        keyExtractor={item => item}
+                        />
         </View>
     );
 }
@@ -135,6 +146,8 @@ const styles = StyleSheet.create({
     },
     buttons: {
         flexDirection: "row",
+        justifyContent: "space-between",
+
     },
 });
 

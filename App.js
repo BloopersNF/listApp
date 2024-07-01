@@ -4,6 +4,7 @@ import { StyleSheet} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
+import 'expo-dev-client';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAOflUm0k7St1uYqMZo9ldmOpJJLGOr7b0",

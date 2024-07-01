@@ -75,9 +75,9 @@ const ListScreen = ({route}) =>
             setQuantity(newQuantity);
             return;
         }
-        const itemPrice = parseFloat(price.replace(',', '.')).toFixed(2) * parseFloat(quantity.replace(',', '.')).toFixed(2);
+        const itemPrice = parseFloat(price.replace(',', '.')).toFixed(2) * parseFloat(quantity.replace(',', '.')).toFixed(2)
         const newList = {...list}; // cria uma nova cópia do estado atual
-        newList.TotalPrice += itemPrice;
+        newList.TotalPrice += itemPrice
         newList.TotalUncheckedPrice += itemPrice;
         newList.Items.push(new Item(item, price.replace(',', '.'), quantity.replace(',', '.'))); // adiciona um item na lista
         setList(newList); // atualiza o estado com a nova lista
@@ -135,7 +135,7 @@ return (
                                 <Text numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
                             </View>
                             <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail">${item.price}</Text>
+                                <Text numberOfLines={1} ellipsizeMode="tail">${parseFloat(item.price).toFixed(2)}</Text>
                             </View>
                             <View style={styles.description}>
                                 <Text numberOfLines={1} ellipsizeMode="tail">{item.quantity}</Text>
@@ -150,11 +150,11 @@ return (
                     list.Items.length > 0 ?
                     <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
                         <View style={{flexDirection: "row"}}>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total marcados: $ {list.TotalCheckedPrice}</Text>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total marcados: $ {parseFloat(list.TotalCheckedPrice).toFixed(2)}</Text>
                             <Text style={{color:"#2a2", fontWeight:"bold"}}> + </Text>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total desmarcados: $ {list.TotalUncheckedPrice}</Text>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total desmarcados: $ {parseFloat(list.TotalUncheckedPrice).toFixed(2)}</Text>
                         </View>
-                        <Text style={{color:"#2a2", fontWeight:"bold"}}>Preço total: $ {list.TotalPrice}</Text>
+                        <Text style={{color:"#2a2", fontWeight:"bold"}}>Preço total: $ {parseFloat(list.TotalPrice).toFixed(2)}</Text>
                     </View> : null
                 )}
                 ListEmptyComponent={() => (

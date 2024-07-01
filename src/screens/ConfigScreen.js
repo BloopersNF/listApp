@@ -1,11 +1,14 @@
 import React from "react";
-import { Text, StyleSheet, View } from "react-native";
+import { FlatList, Text, StyleSheet, View } from "react-native";
+import lang from "../langs/lang";
 
 const ConfigScreen = () => {
+
+    const selected = "en";
     return(
         <View>
             <Text>
-                config
+                {lang["languages"][selected].greeting}
             </Text>            
         </View>
 

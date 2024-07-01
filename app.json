@@ -1,6 +1,16 @@
 {
   "expo": {
     "name": "listApp",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
     "slug": "listApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,16 +25,29 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.listApp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.listApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    
+    "extra": {
+      "eas": {
+        "projectId": "8bbecaaa-1800-4e32-8976-b5c84907f69c"
+      }
     }
-  }
+    
+  },
+  "react-native-google-mobile-ads": {
+      "android_app_id": "ca-app-pub-9404218606533420~5307626712",
+      "ios_app_id": "ca-app-pub-9404218606533420~5307626712"
+    }
 }
