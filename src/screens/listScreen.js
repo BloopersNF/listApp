@@ -1,5 +1,5 @@
 import React from "react";
-import {Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView} from "react-native";
+import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView} from "react-native";
 import List from "../components/List";
 import { useState, useEffect, useRef } from "react";
 import Item from "../components/Item";
@@ -30,7 +30,7 @@ const getData = async (key) => {
 
 const ListScreen = ({route}) => 
     {
-    const {name, id} = route.params;
+    const {name, id, date} = route.params;
     const renderListData = async () => {
         try {
             const listData = await getData(id);
@@ -41,10 +41,10 @@ const ListScreen = ({route}) =>
         }
     }
     //carregar os valores já existentes na lista salva pelo name
-    const [list, setList] = useState(new List(name, [], 0, false, id));
+    const [list, setList] = useState(new List(name, [], 0, false, id, date));
     const [item, setItem] = useState("");
     const [price, setPrice] = useState("");
-    const [quantity, setQuantity] = useState("1");
+    const [quantity, setQuantity] = useState("");
     const [totalPrice, setTotalPrice] = useState(0);
     const [checkList, setCheckList] = useState([]);
 
@@ -65,21 +65,26 @@ const ListScreen = ({route}) =>
         });
     }, []);
     const addItem = async () => {
-        if(item === "" || price === "") {
-            alert("Preencha todos os campos para adicionar um item.");
+        if(item === "") {
+            Alert.alert("O item precisa de um nome valido.");
             return;
         }
-        if(quantity === "")
+        const newItem = new Item(item, price.replace(',', '.'), quantity.replace(',', '.'));
+        if(quantity === "" || quantity === "0")
         {
-            const newQuantity = "1";
-            setQuantity(newQuantity);
-            return;
+            newItem.quantity = "1";
+            
         }
-        const itemPrice = parseFloat(price.replace(',', '.')).toFixed(2) * parseFloat(quantity.replace(',', '.')).toFixed(2)
+        if(price === "" || price === "0")
+            {
+                newItem.price = "0";
+                
+            }
+        const itemPrice = parseFloat(newItem.price).toFixed(2) * parseFloat(newItem.quantity).toFixed(2)
         const newList = {...list}; // cria uma nova cópia do estado atual
         newList.TotalPrice += itemPrice
         newList.TotalUncheckedPrice += itemPrice;
-        newList.Items.push(new Item(item, price.replace(',', '.'), quantity.replace(',', '.'))); // adiciona um item na lista
+        newList.Items.push(newItem); // adiciona um item na lista
         setList(newList); // atualiza o estado com a nova lista
         setItem("");
         setPrice("");
@@ -94,7 +99,7 @@ const ListScreen = ({route}) =>
         console.log(newList.TotalPrice);
         newList.Items.splice(index, 1); 
         setList(newList);
-        await storeData(name, newList);
+        await storeData(id, newList);
         let datas = await getData(id);
         console.log(datas);
     }

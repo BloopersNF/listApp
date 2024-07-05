@@ -29,6 +29,23 @@ const storeData = async (key, value) => {
         }
     }
 
+function formatDate(date) {
+    const day = date.getDate().toString().padStart(2, '0'); // Adiciona um zero à esquerda se necessário
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() retorna um índice base-0, então adicionamos 1
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+}
+
+const clearAllLists = async () => {
+    try {
+        await AsyncStorage.clear();
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+
 const HomeScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [listName, setListName] = useState('');
@@ -93,15 +110,16 @@ const HomeScreen = ({ navigation }) => {
                 return;
         }
         const newId = uuid.v4();
+        const newDate = formatDate(new Date());
         setId(newId);
         console.log(newId);
-        storeData(newId, new List(listName, [], 0, false, newId));
+        storeData(newId, new List(listName, [], 0, false, newId, newDate));
         setListName('');
         const allKeys = await getAllKeys();
         setKeys(allKeys);
         await fetchLists();
         setModalVisible(false);
-        navigation.navigate('List', {name: listName, id: String(newId)});
+        navigation.navigate('List', {name: listName, id: String(newId), date: newDate});
     };
     
     return(
@@ -132,7 +150,7 @@ const HomeScreen = ({ navigation }) => {
                                         </View>
                                         <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
                                             <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Items.length} items</Text>
-                                            <Text style={{fontSize:10, color:"#bbb"}}>Data</Text>
+                                            <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Date}</Text>
                                             <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>${lists[item].TotalPrice}</Text>
                                         </View>
                                     </TouchableOpacity>
