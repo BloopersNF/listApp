@@ -30,10 +30,10 @@ const getData = async (key) => {
 
 const ListScreen = ({route}) => 
     {
-    const {name} = route.params;
+    const {name, id} = route.params;
     const renderListData = async () => {
         try {
-            const listData = await getData(name);
+            const listData = await getData(id);
             return listData;
         }
         catch(e) {
@@ -41,7 +41,7 @@ const ListScreen = ({route}) =>
         }
     }
     //carregar os valores já existentes na lista salva pelo name
-    const [list, setList] = useState(new List(name, [], 0));
+    const [list, setList] = useState(new List(name, [], 0, false, id));
     const [item, setItem] = useState("");
     const [price, setPrice] = useState("");
     const [quantity, setQuantity] = useState("1");
@@ -83,7 +83,7 @@ const ListScreen = ({route}) =>
         setList(newList); // atualiza o estado com a nova lista
         setItem("");
         setPrice("");
-        await storeData(name, newList);
+        await storeData(id, newList);
         flatList.current.scrollToEnd()
     }
 
@@ -95,7 +95,7 @@ const ListScreen = ({route}) =>
         newList.Items.splice(index, 1); 
         setList(newList);
         await storeData(name, newList);
-        let datas = await getData(name);
+        let datas = await getData(id);
         console.log(datas);
     }
     const priceCheckItem = async (index) => {
@@ -104,7 +104,7 @@ const ListScreen = ({route}) =>
         newList.Items[index].checked ? newList.TotalCheckedPrice += newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalUncheckedPrice += newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
         newList.Items[index].checked ? newList.TotalUncheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalCheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
         setList(newList);
-        await storeData(name, newList);
+        await storeData(id, newList);
     }
         
 

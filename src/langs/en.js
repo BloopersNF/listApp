@@ -1,8 +1,12 @@
+
 const en = {
+    language: "Select Language",
     greeting: "Hello",
     welcome: "Welcome",
     goodbye: "Goodbye",
-    // Add more translations here
+    about: "About",
+    bePremium: "Be Premium",
+
 };
 
 export default en;

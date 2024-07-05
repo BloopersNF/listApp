@@ -20,33 +20,42 @@ const DeleteScreen = ({ navigation }) => {
         return keys;
     }
 
+    const fetchAndUpdateLists = async () => {
+        const allKeys = await getAllKeys(); // Pega todas as chaves
+        const lists = await getDeletedLists(allKeys); // Passa as chaves atualizadas como argumento
+        setKeys(allKeys); // Atualiza o estado das chaves
+        setDeletedLists(lists); // Atualiza o estado das listas deletadas
+    }
+
     
     //função que pega todas as listas deletadas
-    getDeletedLists = async () => {
+    getDeletedLists = async (allKeys) => {
+        let lists = [];
         try {
-            let lists = [];
-            for (let i = 0; i < keys.length; i++) {
-                let list = await AsyncStorage.getItem(keys[i]);
+            for (let i = 0; i < allKeys.length; i++) {
+                let list = await AsyncStorage.getItem(allKeys[i]);
                 if (list != null) {
                     list = JSON.parse(list);
-
                     if (list.Deleted) {
-                        lists.push(list);
+                        lists.push({...list});
                     }
                 }
             }
-            setDeletedLists(lists);
-            
         } catch(e) {
             console.log(e);
         }
+        return lists; 
     }
 
     //função que deleta uma lista
     deleteList = async (key) => {
         try {
+            
+            console.log("Deletando: ", key);
             await AsyncStorage.removeItem(key);
-            getDeletedLists();
+            const newKeys = await AsyncStorage.getAllKeys();
+            setKeys(newKeys);
+            await fetchAndUpdateLists();
         } catch(e) {
             console.log(e);
         }
@@ -59,27 +68,41 @@ const DeleteScreen = ({ navigation }) => {
             list = JSON.parse(list);
             list.Deleted = false;
             await AsyncStorage.setItem(key, JSON.stringify(list));
-            getAllKeys();
-            getDeletedLists();
+            fetchAndUpdateLists();
         } catch(e) {
             console.log(e);
         }
     }
+
+    const clearAllLists = async () => {
+        try {
+            await AsyncStorage.clear();
+        } catch(e) {
+            console.log(e);
+        }
+    }
+
     
     useEffect(() => {
         const fetchData = async () => {
-            await getAllKeys();
-            await getDeletedLists();
+            await fetchAndUpdateLists();
         }
         fetchData();
     }
     , []);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            await fetchAndUpdateLists();
+        }
+        fetchData();
+    }
+    , [deletedLists.length]);
+
     useFocusEffect(
         React.useCallback(() => {
             const fetchData = async () => {
-                getAllKeys();
-                getDeletedLists();
+                await fetchAndUpdateLists();
             }
             fetchData();
         }, [])
@@ -88,15 +111,15 @@ const DeleteScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <FlatList
-                data={Object.keys(deletedLists)}
+                data={deletedLists}
                 renderItem={({ item }) => {
-                    if (deletedLists[item].Deleted)
+                    if (item.Deleted)
                         {
                             return(
                                 <TouchableOpacity style={styles.listItem} onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}>
-                                    <Text style={styles.listName}>{deletedLists[item].Name}</Text>
+                                    <Text style={styles.listName}>{item.Name}</Text>
                                     <View style={styles.buttons}>
-                                        <TouchableOpacity onPress={() => restoreList(deletedLists[item].Name)}>
+                                        <TouchableOpacity onPress={() => restoreList(item.Id)}>
                                         <Icon name="reload1" size={20} color="#000" />
                                         </TouchableOpacity>
                                         <TouchableOpacity onPress={() => {
@@ -108,7 +131,7 @@ const DeleteScreen = ({ navigation }) => {
                                                         text: "Cancelar",
                                                         style: "cancel"
                                                     },
-                                                    { text: "Deletar", onPress: () => deleteList(deletedLists[item].Name) }
+                                                    { text: "Deletar", onPress: async () => await deleteList(item.Id) }
                                                 ],
                                                 { cancelable: false }
                                             );
@@ -120,8 +143,9 @@ const DeleteScreen = ({ navigation }) => {
                                 );
                             }
                         }}
-                        keyExtractor={item => item}
+                        keyExtractor={item => item.key}
                         />
+                        
         </View>
     );
 }

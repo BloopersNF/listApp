@@ -1,7 +1,7 @@
 
 export default class List
 {
-    constructor(name, items, totalPrice, deleted = false)
+    constructor(name, items, totalPrice, deleted = false, id)
     {
         this.Name = name;
         this.Items = items;
@@ -9,6 +9,7 @@ export default class List
         this.TotalCheckedPrice = totalPrice;
         this.TotalUncheckedPrice = totalPrice;
         this.Deleted = deleted;
+        this.Id = id;
     }
     addItem(item)
     {

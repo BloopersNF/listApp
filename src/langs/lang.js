@@ -5,7 +5,6 @@ const lang = {
     "languages": {
         pt: pt,
         en: en,
-        // Add more languages here
     }
 
 

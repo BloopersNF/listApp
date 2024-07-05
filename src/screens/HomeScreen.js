@@ -5,6 +5,8 @@ import CreateButton from "../components/createButton";
 import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
 import { useFocusEffect } from '@react-navigation/native';
+import uuid from 'react-native-uuid';
+
 
 
 const getData = async (key) => {
@@ -32,7 +34,8 @@ const HomeScreen = ({ navigation }) => {
     const [listName, setListName] = useState('');
     const [keys, setKeys] = useState([]);
     const [lists, setLists] = useState([]);
-    
+    const [id, setId] = useState(0);
+
     getAllKeys = async () => {
         try {
             all = await AsyncStorage.getAllKeys();
@@ -51,17 +54,29 @@ const HomeScreen = ({ navigation }) => {
 
 
     useEffect(() => {
-        getAllKeys();
+        const fetchData = async () => {
+            await getAllKeys();
+            await fetchLists();
+        } 
+        fetchData();
     }, []);
 
     
     useEffect(() => {
-        fetchLists();
+        const fetchData = async () => {
+            await getAllKeys();
+            await fetchLists();
+        } 
+        fetchData();
     }, [keys.length]);
 
     useFocusEffect(
         React.useCallback(() => {
-            fetchLists();
+            const fetchData = async () => {
+                await getAllKeys();
+                await fetchLists();
+            } 
+            fetchData();
         }, [])
     );
 
@@ -77,18 +92,16 @@ const HomeScreen = ({ navigation }) => {
                 Alert.alert("Nome da lista inválido");
                 return;
         }
-        else if(keys.includes(listName))
-        {
-            Alert.alert("Nome da lista já existe");
-            return;
-        }
-        storeData(listName, new List(listName, [], 0));
+        const newId = uuid.v4();
+        setId(newId);
+        console.log(newId);
+        storeData(newId, new List(listName, [], 0, false, newId));
         setListName('');
         const allKeys = await getAllKeys();
         setKeys(allKeys);
         await fetchLists();
         setModalVisible(false);
-        navigation.navigate('List', {name: listName});
+        navigation.navigate('List', {name: listName, id: String(newId)});
     };
     
     return(
@@ -102,16 +115,16 @@ const HomeScreen = ({ navigation }) => {
                         if (!lists[item].Deleted)
                             {
                                 return(
-                                    <TouchableOpacity style={styles.listItem} onPress={() => navigation.navigate('List', {name: lists[item].Name})}>
+                                    <TouchableOpacity style={styles.listItem} onPress={() => navigation.navigate('List', {name: lists[item].Name, id: lists[item].Id})}>
                                         <View >
                                             <View style={{flexDirection: "row", width:"100vw", justifyContent: "space-between", alignItems:"center"}}>
                                                 <Text>{lists[item].Name}</Text>
-                                                <TouchableOpacity onPress={() => {
+                                                <TouchableOpacity onPress={async () => {
                                                     const deletedList = lists[item];
                                                     deletedList.Deleted = true;
                                                     console.log(deletedList);
-                                                    storeData(deletedList.Name, deletedList);
-                                                    fetchLists();
+                                                    storeData(deletedList.Id, deletedList);
+                                                    await fetchLists();
                                                 }}>
                                                     <Icon name="delete" size={24} color="#e22"/>
                                                 </TouchableOpacity>
