@@ -37,9 +37,9 @@ Um aplicativo de lista de compras feito em **React Native** com **Expo**. Este a
 ### Passos
 
 1. Clone este repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
-   ```
+```bash
+git clone https://github.com/BloopersNF/listApp.git
+```
 2. Navegue até a pasta do projeto:
 
 ```bash
