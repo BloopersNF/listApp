@@ -4,32 +4,25 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useFocusEffect } from '@react-navigation/native';
 
-//tela onde vão aparecer as listas deletadas
+// Tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
     const [keys, setKeys] = useState([]);
     const [deletedLists, setDeletedLists] = useState([]);
 
-    //função que pega todas as chaves do async storage
-    getAllKeys = async () => {
+    // Busca todas as chaves do AsyncStorage
+    const getAllKeys = async () => {
         try {
-            all = await AsyncStorage.getAllKeys();
+            const all = await AsyncStorage.getAllKeys();
             setKeys(all);
+            return all;
         } catch(e) {
             console.log(e);
+            return [];
         }
-        return keys;
     }
-
-    const fetchAndUpdateLists = async () => {
-        const allKeys = await getAllKeys(); // Pega todas as chaves
-        const lists = await getDeletedLists(allKeys); // Passa as chaves atualizadas como argumento
-        setKeys(allKeys); // Atualiza o estado das chaves
-        setDeletedLists(lists); // Atualiza o estado das listas deletadas
-    }
-
     
-    //função que pega todas as listas deletadas
-    getDeletedLists = async (allKeys) => {
+    // Busca todas as listas deletadas a partir das chaves
+    const getDeletedLists = async (allKeys) => {
         let lists = [];
         try {
             for (let i = 0; i < allKeys.length; i++) {
@@ -47,10 +40,17 @@ const DeleteScreen = ({ navigation }) => {
         return lists; 
     }
 
-    //função que deleta uma lista
-    deleteList = async (key) => {
+    // Atualiza os estados de chaves e listas deletadas
+    const fetchAndUpdateLists = async () => {
+        const allKeys = await getAllKeys();
+        const lists = await getDeletedLists(allKeys);
+        setKeys(allKeys);
+        setDeletedLists(lists);
+    }
+
+    // Deleta uma lista permanentemente
+    const deleteList = async (key) => {
         try {
-            
             console.log("Deletando: ", key);
             await AsyncStorage.removeItem(key);
             const newKeys = await AsyncStorage.getAllKeys();
@@ -61,8 +61,8 @@ const DeleteScreen = ({ navigation }) => {
         }
     }
 
-    //função que restaura uma lista
-    restoreList = async (key) => {
+    // Restaura uma lista deletada
+    const restoreList = async (key) => {
         try {
             let list = await AsyncStorage.getItem(key);
             list = JSON.parse(list);
@@ -74,31 +74,34 @@ const DeleteScreen = ({ navigation }) => {
         }
     }
 
-    const clearAllLists = async () => {
+    // Remove todas as listas marcadas como deletadas
+    const clearAllDeletedLists = async () => {
         try {
-            await AsyncStorage.clear();
+            const allKeys = await AsyncStorage.getAllKeys();
+            for (let i = 0; i < allKeys.length; i++) {
+                let list = await AsyncStorage.getItem(allKeys[i]);
+                if (list != null) {
+                    list = JSON.parse(list);
+                    if (list.Deleted) {
+                        await AsyncStorage.removeItem(allKeys[i]);
+                    }
+                }
+            }
+            await fetchAndUpdateLists();
         } catch(e) {
             console.log(e);
         }
     }
 
-    
+    // Atualiza listas ao montar o componente
     useEffect(() => {
         const fetchData = async () => {
             await fetchAndUpdateLists();
         }
         fetchData();
-    }
-    , []);
+    }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            await fetchAndUpdateLists();
-        }
-        fetchData();
-    }
-    , [deletedLists.length]);
-
+    // Atualiza listas sempre que a tela ganhar foco
     useFocusEffect(
         React.useCallback(() => {
             const fetchData = async () => {
@@ -143,7 +146,7 @@ const DeleteScreen = ({ navigation }) => {
                                 );
                             }
                         }}
-                        keyExtractor={item => item.key}
+                        keyExtractor={item => item.Id}
                         />
                         
         </View>
@@ -171,7 +174,6 @@ const styles = StyleSheet.create({
     buttons: {
         flexDirection: "row",
         justifyContent: "space-between",
-
     },
 });
 
