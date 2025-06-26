@@ -29,6 +29,15 @@ const DeleteScreen = ({ navigation }) => {
                 let list = await AsyncStorage.getItem(allKeys[i]);
                 if (list != null) {
                     list = JSON.parse(list);
+                    if (list.DeletedAt) {
+                        const deletedAt = new Date(list.DeletedAt);
+                        const now = new Date();
+                        const diffTime = Math.abs(now - deletedAt);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays >= 7) { // Deleta após 7 dias
+                            await deleteList(allKeys[i]);
+                        }
+                    }
                     if (list.Deleted) {
                         lists.push({...list});
                     }

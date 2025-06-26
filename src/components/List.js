@@ -9,6 +9,7 @@ export default class List
         this.TotalCheckedPrice = totalPrice;
         this.TotalUncheckedPrice = totalPrice;
         this.Deleted = deleted;
+        this.DeletedAt = null;
         this.Id = id;
         this.Date = date
     }

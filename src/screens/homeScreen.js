@@ -140,6 +140,7 @@ const HomeScreen = ({ navigation }) => {
                                                 <TouchableOpacity onPress={async () => {
                                                     const deletedList = lists[item];
                                                     deletedList.Deleted = true;
+                                                    deletedList.DeletedAt = new Date().toISOString();
                                                     console.log(deletedList);
                                                     storeData(deletedList.Id, deletedList);
                                                     await fetchLists();
