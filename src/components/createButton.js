@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import {StyleSheet,TouchableOpacity, View} from "react-native";
+import {StyleSheet,TouchableOpacity, View, Dimensions} from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 
+const { width, height } = Dimensions.get('window');
+
 const CreateButton = ({method}) => {
+    const buttonSize = Math.min(width, height) * 0.175; // 15% da menor dimensão
+    const iconSize = buttonSize * 0.45; // 45% do tamanho do botão
+    const margin = width * 0.07; // 5% da largura da tela
+    
     return(
-        <TouchableOpacity onPress={method} >
-            <View style={styles.createButton}>
-                <Icon name="plus" size={30} color="#fff"/>
-            </View>
+        <TouchableOpacity 
+            onPress={method} 
+            style={[styles.createButton, {
+                width: buttonSize,
+                height: buttonSize,
+                borderRadius: buttonSize / 2,
+                bottom: margin,
+                right: margin,
+            }]}
+        >
+            <Icon name="plus" size={iconSize} color="#fff"/>
         </TouchableOpacity>)
 }
 //colocando um botão no canto infeiror direito da tela e 10x10 de vw
@@ -16,12 +29,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         justifyContent: "center",
         alignItems: "center",
-        width: 65,
-        height: 65,
-        borderRadius: "50%",
-        backgroundColor: '#4151E1', // change this to a bright color
-        bottom: 65,
-        right: 10,
+        backgroundColor: '#4151E1',
+        elevation: 5,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
     }
 })
 

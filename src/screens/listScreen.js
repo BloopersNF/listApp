@@ -174,24 +174,25 @@ return (
                     <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
                         <TextInput
                             placeholder="Item"
+                            placeholderTextColor="#999"
                             value={item}
                             onChangeText={(text) => setItem(text)}
                             style={styles.itemInput}
                         />
                         <TextInput
-                            initialValue={0}
                             placeholder="preço"
+                            placeholderTextColor="#999"
                             value={price}
                             onChangeText={(text) => setPrice(text)}
                             style={styles.itemPrice}
                             keyboardType="numeric"
                         />
                         <TextInput
-                            initialValue={1}
-                            placeholder="n"
+                            placeholder="qtd"
+                            placeholderTextColor="#999"
                             value={quantity}
                             onChangeText={(text) => setQuantity(text)}
-                            style={styles.itemPrice}
+                            style={styles.itemQuantity}
                             keyboardType="numeric"
                         />
                         <TouchableOpacity onPress={addItem}>
@@ -207,7 +208,7 @@ styles = StyleSheet.create({
     checkCircle: {
         width: 30,
         height: 30,
-        borderRadius: 100,
+        borderRadius: 15,
         borderWidth: 1,
         borderColor: "#000",
         alignItems: "center",
@@ -223,36 +224,46 @@ styles = StyleSheet.create({
         margin: 5,
         borderColor: "#fff",
         borderWidth: 1,
-        borderRadius: "50vh",
+        borderRadius: 20,
         backgroundColor: "#fff",
     },
     itemInput: {
-        width: "50%",
+        width: "45%",
         padding: 10,
-        borderColor: "#fff",
+        borderColor: "#ddd",
         borderWidth: 1,
-        margin:5,
-        borderRadius: "50vh",
-        backgroundColor:"#fff"
-
+        margin: 5,
+        borderRadius: 20,
+        backgroundColor: "#fff",
+        color: "#000"
     },
     itemPrice: {
-        width: "15%",
+        width: "20%",
         padding: 10,
-        borderColor: "#fff",
+        borderColor: "#ddd",
         borderWidth: 1,
-        margin:5,
-        borderRadius: "50vh",
-        backgroundColor:"#fff",
-        alignItems: "center",
-        
-
+        margin: 5,
+        borderRadius: 20,
+        backgroundColor: "#fff",
+        textAlign: "center",
+        color: "#000"
+    },
+    itemQuantity: {
+        width: "10%",
+        padding: 10,
+        borderColor: "#ddd",
+        borderWidth: 1,
+        margin: 5,
+        borderRadius: 20,
+        backgroundColor: "#fff",
+        textAlign: "center",
+        color: "#000"
     },
     description: {
         width: "25%",
         padding: 0,
         borderColor: "#fff",
-        backgroundColor:"#fff"
+        backgroundColor: "#fff"
     }
 })
 

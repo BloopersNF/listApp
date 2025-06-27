@@ -123,50 +123,46 @@ const HomeScreen = ({ navigation }) => {
     };
     
     return(
-        <SafeAreaView style={{position: "relative", height: "100%", width: "100%", backgroundColor:"#eee"}}>
-            
-            <View>
-                <FlatList
-                    data={Object.keys(lists)}
-                    renderItem={({item}) =>{
+        <SafeAreaView style={styles.container}>
+            <FlatList
+                data={Object.keys(lists)}
+                renderItem={({item}) =>{
 
-                        if (!lists[item].Deleted)
-                            {
-                                return(
-                                    <TouchableOpacity style={styles.listItem} onPress={() => navigation.navigate('List', {name: lists[item].Name, id: lists[item].Id})}>
-                                        <View >
-                                            <View style={{flexDirection: "row", width:"100vw", justifyContent: "space-between", alignItems:"center"}}>
-                                                <Text>{lists[item].Name}</Text>
-                                                <TouchableOpacity onPress={async () => {
-                                                    const deletedList = lists[item];
-                                                    deletedList.Deleted = true;
-                                                    deletedList.DeletedAt = new Date().toISOString();
-                                                    console.log(deletedList);
-                                                    storeData(deletedList.Id, deletedList);
-                                                    await fetchLists();
-                                                }}>
-                                                    <Icon name="delete" size={24} color="#e22"/>
-                                                </TouchableOpacity>
-                                            </View>
+                    if (!lists[item].Deleted)
+                        {
+                            return(
+                                <TouchableOpacity style={styles.listItem} onPress={() => navigation.navigate('List', {name: lists[item].Name, id: lists[item].Id})}>
+                                    <View >
+                                        <View style={{flexDirection: "row", width:"100%", justifyContent: "space-between", alignItems:"center"}}>
+                                            <Text>{lists[item].Name}</Text>
+                                            <TouchableOpacity onPress={async () => {
+                                                const deletedList = lists[item];
+                                                deletedList.Deleted = true;
+                                                deletedList.DeletedAt = new Date().toISOString();
+                                                console.log(deletedList);
+                                                storeData(deletedList.Id, deletedList);
+                                                await fetchLists();
+                                            }}>
+                                                <Icon name="delete" size={24} color="#e22"/>
+                                            </TouchableOpacity>
                                         </View>
-                                        <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
-                                            <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Items.length} items</Text>
-                                            <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Date}</Text>
-                                            <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>${lists[item].TotalPrice}</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                )
-                            } 
-                        }
+                                    </View>
+                                    <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
+                                        <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Items.length} items</Text>
+                                        <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Date}</Text>
+                                        <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>${lists[item].TotalPrice}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )
+                        } 
                     }
-                    keyExtractor={(item) => item}
-                    initialNumToRender={10}
-                    removeClippedSubviews={true}
-                />     
-            </View>
-            <View style={{position:"absolute", bottom:10, right:10}}>
-                <CreateButton method={() => setModalVisible(true)}/>
-            </View>
+                }
+                keyExtractor={(item) => item}
+                initialNumToRender={10}
+                removeClippedSubviews={true}
+                contentContainerStyle={{paddingBottom: 100}}
+            />     
+            <CreateButton method={() => setModalVisible(true)}/>
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -202,6 +198,10 @@ const HomeScreen = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#eee"
+    },
     centeredView: {
         flex: 1,
         justifyContent: "center",

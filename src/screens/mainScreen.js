@@ -48,7 +48,7 @@ const MainScreen = () =>{
 
 const styles = StyleSheet.create({
     navigator:{
-        padding: 24,
+        padding: 0,
         width: "95%",
         backgroundColor: "#f8f8f8",
         shadowOffset: {width: 5, height: 3},
@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
         alignSelf: "center",
         borderRadius: 50,
         bottom: 10,
+        height: "9.5%"
     }
 })
 export default MainScreen;
