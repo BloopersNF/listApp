@@ -119,14 +119,19 @@ const ListScreen = ({route}) =>
 
 
 return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{flex:1, backgroundColor:"#eee"}}>
+    <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        style={{flex:1, backgroundColor:"#eee"}}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
         <SafeAreaView style={{flex:1, backgroundColor:"#eee"}} >
             <FlatList
                 ref ={flatList}
                 initialNumToRender={14}
-                keyboardDismissMode="none"
+                keyboardDismissMode="on-drag"
                 data={list.Items}
                 keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{paddingBottom: 80}}
                 renderItem={({ item, index }) => (
                     <View style={{flexDirection: "row", alignItems:"center", justifyContent:"center" }}>
                         <TouchableOpacity style={{margin:5}} onPress={() => priceCheckItem(index)}>
@@ -170,41 +175,48 @@ return (
                 )
                 }
                 />
-                <View>
-                    <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
-                        <TextInput
-                            placeholder="Item"
-                            placeholderTextColor="#999"
-                            value={item}
-                            onChangeText={(text) => setItem(text)}
-                            style={styles.itemInput}
-                        />
-                        <TextInput
-                            placeholder="preço"
-                            placeholderTextColor="#999"
-                            value={price}
-                            onChangeText={(text) => setPrice(text)}
-                            style={styles.itemPrice}
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            placeholder="qtd"
-                            placeholderTextColor="#999"
-                            value={quantity}
-                            onChangeText={(text) => setQuantity(text)}
-                            style={styles.itemQuantity}
-                            keyboardType="numeric"
-                        />
-                        <TouchableOpacity onPress={addItem}>
-                            <Icon name="pluscircle" size={30} color="#2e2"></Icon>
-                        </TouchableOpacity>
-                    </View>
+            <View style={styles.inputContainer}>
+                <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
+                    <TextInput
+                        placeholder="Item"
+                        placeholderTextColor="#999"
+                        value={item}
+                        onChangeText={(text) => setItem(text)}
+                        style={styles.itemInput}
+                    />
+                    <TextInput
+                        placeholder="preço"
+                        placeholderTextColor="#999"
+                        value={price}
+                        onChangeText={(text) => setPrice(text)}
+                        style={styles.itemPrice}
+                        keyboardType="numeric"
+                    />
+                    <TextInput
+                        placeholder="qtd"
+                        placeholderTextColor="#999"
+                        value={quantity}
+                        onChangeText={(text) => setQuantity(text)}
+                        style={styles.itemQuantity}
+                        keyboardType="numeric"
+                    />
+                    <TouchableOpacity onPress={addItem}>
+                        <Icon name="pluscircle" size={30} color="#2e2"></Icon>
+                    </TouchableOpacity>
                 </View>
+            </View>
         </SafeAreaView>
     </KeyboardAvoidingView>
 );
 }
 styles = StyleSheet.create({
+    inputContainer: {
+        backgroundColor: "#eee",
+        paddingVertical: 10,
+        paddingHorizontal: 5,
+        borderTopWidth: 1,
+        borderTopColor: "#ddd"
+    },
     checkCircle: {
         width: 30,
         height: 30,
