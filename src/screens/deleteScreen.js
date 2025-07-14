@@ -34,8 +34,8 @@ const DeleteScreen = ({ navigation }) => {
                         const now = new Date();
                         const diffTime = Math.abs(now - deletedAt);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (diffDays >= 7) { // Deleta após 7 dias
-                            await deleteList(allKeys[i]);
+                        if (diffDays >= 7 && (list.Deleted == true)) { // Deleta após 7 dias
+                            await deleteList(list.Id);
                         }
                     }
                     if (list.Deleted) {
