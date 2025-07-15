@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
+import mobileAds from 'react-native-google-mobile-ads';
 import 'expo-dev-client';
 
 const firebaseConfig = {
@@ -19,8 +20,14 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-
 const App = () => {
+  useEffect(() => {
+    // Inicializar o Google Mobile Ads SDK
+    mobileAds().initialize().then(adapterStatuses => {
+      console.log('AdMob initialized:', adapterStatuses);
+    });
+  }, []);
+
   return (
     <NavigationContainer>
       <StackScreen/>
