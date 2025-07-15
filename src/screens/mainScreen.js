@@ -10,7 +10,7 @@ Tab = createBottomTabNavigator();
 
 const MainScreen = () =>{
     return(
-        <Tab.Navigator screenOptions={{tabBarShowLabel:false, tabBarStyle:styles.navigator}} initialRouteName={"Home"}>
+        <Tab.Navigator screenOptions={{tabBarShowLabel:false, tabBarStyle:styles.navigator, headerShown: false}} initialRouteName={"Home"}>
             <Tab.Screen 
             name="Delete" 
             component={DeleteScreen} 

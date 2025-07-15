@@ -1,4 +1,3 @@
-
 export default class List
 {
     constructor(name, items, totalPrice, deleted = false, id, date)
@@ -16,6 +15,8 @@ export default class List
     addItem(item)
     {
         this.Items.push(item);
+
+        
     }
     removeItem(index)
     {

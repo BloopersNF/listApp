@@ -5,7 +5,14 @@ import { useState, useEffect, useRef } from "react";
 import Item from "../components/Item";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
+import { TestIds, InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
 
+
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+    requestNonPersonalizedAdsOnly: true,
+});
 
 const storeData = async (key, value) => {
     try {
@@ -47,6 +54,7 @@ const ListScreen = ({route}) =>
     const [quantity, setQuantity] = useState("");
     const [totalPrice, setTotalPrice] = useState(0);
     const [checkList, setCheckList] = useState([]);
+    const [loaded, setLoaded] = useState(false);
 
     //percorrer a lista atual para verificar os items que estão com o check true
     const checkItems = () => {
@@ -64,6 +72,44 @@ const ListScreen = ({route}) =>
             }
         });
     }, []);
+
+    useEffect(() => {
+        const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+        setLoaded(true);
+        });
+
+        const unsubscribeOpened = interstitial.addAdEventListener(AdEventType.OPENED, () => {
+        if (Platform.OS === 'ios') {
+            // Prevent the close button from being unreachable by hiding the status bar on iOS
+            StatusBar.setHidden(true);
+        }
+        });
+
+        const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+        if (Platform.OS === 'ios') {
+            StatusBar.setHidden(false);
+        }
+        });
+
+        // Start loading the interstitial straight away
+        interstitial.load();
+
+        // Unsubscribe from events on unmount
+        return () => {
+        unsubscribeLoaded();
+        unsubscribeOpened();
+        unsubscribeClosed();
+        };
+    }, [loaded]);
+
+    useEffect(() => {
+        if (loaded) {
+            interstitial.show();
+        }
+    }, [loaded]);
+
+
+
     const addItem = async () => {
         if(item === "") {
             Alert.alert("O item precisa de um nome valido.");
@@ -115,7 +161,6 @@ const ListScreen = ({route}) =>
 
     //console.log(list);
     const flatList = useRef();
-
 
 
 return (
@@ -200,8 +245,8 @@ return (
                         style={styles.itemQuantity}
                         keyboardType="numeric"
                     />
-                    <TouchableOpacity onPress={addItem}>
-                        <Icon name="pluscircle" size={30} color="#2e2"></Icon>
+                    <TouchableOpacity onPress={() => {addItem()}}>
+                        <Icon name="pluscircle" size={30} color="#2e2" />
                     </TouchableOpacity>
                 </View>
             </View>

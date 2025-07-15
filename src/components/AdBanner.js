@@ -9,7 +9,7 @@ const AdBanner = () => {
     <View style={styles.container}>
       <BannerAd
         unitId={adUnitId}
-        size={BannerAdSize.FULL_BANNER}
+        size={BannerAdSize.INLINE_ADAPTIVE_BANNER}
         requestOptions={{
           requestNonPersonalizedAdsOnly: true,
         }}

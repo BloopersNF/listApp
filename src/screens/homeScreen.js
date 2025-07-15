@@ -6,6 +6,7 @@ import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
 import { useFocusEffect } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
+import InterstitialAdManager from "../components/InterstitialAdManager";
 
 
 
