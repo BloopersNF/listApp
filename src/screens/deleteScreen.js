@@ -124,45 +124,94 @@ const DeleteScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-            <FlatList
-                data={deletedLists}
-                renderItem={({ item }) => {
-                    if (item.Deleted)
-                        {
-                            return(
-                                <TouchableOpacity 
-                                    style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]} 
-                                    onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}
-                                >
-                                    <Text style={[styles.listName, { color: colors.text }]}>{item.Name}</Text>
-                                    <View style={styles.buttons}>
-                                        <TouchableOpacity onPress={() => restoreList(item.Id)}>
-                                        <Icon name="reload1" size={20} color={colors.primary} />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => {
-                                            Alert.alert(
-                                                "Você realmente deseja deletar esta lista permanentemente?",
-                                                "",
-                                                [
-                                                    {
-                                                        text: "Cancelar",
-                                                        style: "cancel"
-                                                    },
-                                                    { text: "Deletar", onPress: async () => await deleteList(item.Id) }
-                                                ],
-                                                { cancelable: false }
-                                            );
-                                        }}>
-                                        <Icon name="delete" size={20} color={colors.danger} />
-                                        </TouchableOpacity>
+            {deletedLists.length > 0 ? (
+                <>
+                    <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                        <Text style={[styles.headerTitle, { color: colors.text }]}>Listas Deletadas</Text>
+                        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+                            {deletedLists.length} {deletedLists.length === 1 ? 'lista' : 'listas'} na lixeira
+                        </Text>
+                        <TouchableOpacity 
+                            style={[styles.clearAllButton, { backgroundColor: colors.danger }]}
+                            onPress={() => {
+                                Alert.alert(
+                                    "Limpar Lixeira",
+                                    "Você realmente deseja deletar permanentemente todas as listas da lixeira?",
+                                    [
+                                        { text: "Cancelar", style: "cancel" },
+                                        { text: "Limpar Tudo", onPress: clearAllDeletedLists, style: "destructive" }
+                                    ]
+                                );
+                            }}
+                        >
+                            <Icon name="delete" size={16} color="#fff" />
+                            <Text style={styles.clearAllText}>Limpar Tudo</Text>
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <FlatList
+                        data={deletedLists}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.listContainer}
+                        renderItem={({ item, index }) => {
+                            if (item.Deleted) {
+                                const deletedDate = item.DeletedAt ? new Date(item.DeletedAt).toLocaleDateString('pt-BR') : '';
+                                return(
+                                    <View style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+                                        <View style={styles.listContent}>
+                                            <View style={styles.listInfo}>
+                                                <Text style={[styles.listName, { color: colors.text }]} numberOfLines={1}>
+                                                    {item.Name}
+                                                </Text>
+                                                <Text style={[styles.listDetails, { color: colors.textTertiary }]}>
+                                                    {item.Items?.length || 0} itens • Deletada em {deletedDate}
+                                                </Text>
+                                            </View>
+                                            
+                                            <View style={styles.actions}>
+                                                <TouchableOpacity 
+                                                    style={[styles.actionButton, styles.restoreButton, { backgroundColor: colors.primary }]}
+                                                    onPress={() => restoreList(item.Id)}
+                                                >
+                                                    <Icon name="reload1" size={18} color="#fff" />
+                                                    <Text style={styles.actionText}>Restaurar</Text>
+                                                </TouchableOpacity>
+                                                
+                                                <TouchableOpacity 
+                                                    style={[styles.actionButton, styles.deleteButton, { backgroundColor: colors.danger }]}
+                                                    onPress={() => {
+                                                        Alert.alert(
+                                                            "Deletar Permanentemente",
+                                                            `Você realmente deseja deletar "${item.Name}" permanentemente? Esta ação não pode ser desfeita.`,
+                                                            [
+                                                                { text: "Cancelar", style: "cancel" },
+                                                                { text: "Deletar", onPress: async () => await deleteList(item.Id), style: "destructive" }
+                                                            ]
+                                                        );
+                                                    }}
+                                                >
+                                                    <Icon name="delete" size={18} color="#fff" />
+                                                    <Text style={styles.actionText}>Deletar</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
                                     </View>
-                                </TouchableOpacity>
                                 );
                             }
+                            return null;
                         }}
                         keyExtractor={item => item.Id}
-                        />
-                        
+                    />
+                </>
+            ) : (
+                <View style={styles.emptyContainer}>
+                    <Icon name="delete" size={80} color={colors.textTertiary} />
+                    <Text style={[styles.emptyTitle, { color: colors.text }]}>Lixeira Vazia</Text>
+                    <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+                        Não há listas deletadas no momento
+                    </Text>
+                </View>
+            )}
         </SafeAreaView>
     );
 }
@@ -170,24 +219,106 @@ const DeleteScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 10,
+    },
+    header: {
+        padding: 20,
+        borderBottomWidth: 1,
+        marginBottom: 10,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        marginBottom: 15,
+    },
+    clearAllButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        alignSelf: 'flex-start',
+    },
+    clearAllText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 6,
+    },
+    listContainer: {
+        paddingHorizontal: 15,
+        paddingBottom: 100,
     },
     listItem: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 10,
-        margin: 5,
-        borderRadius: 5,
+        borderRadius: 12,
         borderWidth: 1,
+        marginBottom: 12,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    listContent: {
+        padding: 16,
+    },
+    listInfo: {
+        marginBottom: 12,
     },
     listName: {
-        fontSize: 20,
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 4,
     },
-    buttons: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        gap: 15,
+    listDetails: {
+        fontSize: 12,
+    },
+    actions: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        flex: 1,
+    },
+    actionText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 6,
+    },
+    restoreButton: {
+        // Cor definida inline com colors.primary
+    },
+    deleteButton: {
+        // Cor definida inline com colors.danger
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+    },
+    emptyTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginTop: 20,
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        fontSize: 16,
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });
 

@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import InterstitialAdManager from "../components/InterstitialAdManager";
 import { useTheme } from "../context/ThemeContext";
+import { formatCurrency } from "../utils/currency";
 
 
 
@@ -254,7 +255,7 @@ const HomeScreen = ({ navigation }) => {
                                     {list.Date || ''}
                                 </Text>
                                 <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>
-                                    ${Number(list.TotalPrice || 0).toFixed(2)}
+                                    {formatCurrency(list.TotalPrice || 0)}
                                 </Text>
                             </View>
                         </TouchableOpacity>

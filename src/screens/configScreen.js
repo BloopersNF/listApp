@@ -8,6 +8,7 @@ const ConfigScreen = () => {
     const { isDarkMode, toggleTheme, colors } = useTheme();
     const [selected, setSelected] = useState("en");
     const [aboutModalVisible, setAboutModalVisible] = useState(false);
+    const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
     const handleContactUs = () => {
         const email = lang.languages[selected].contactEmail;
@@ -28,16 +29,29 @@ const ConfigScreen = () => {
             });
     };
 
+    const availableLanguages = [
+        { code: "en", name: "English", flag: "🇺🇸" },
+        { code: "pt", name: "Português", flag: "🇧🇷" },
+        { code: "es", name: "Español", flag: "🇪🇸" },
+        { code: "fr", name: "Français", flag: "🇫🇷" },
+        { code: "cn", name: "中文", flag: "🇨🇳" }
+    ];
+
+    const handleLanguageSelect = (languageCode) => {
+        setSelected(languageCode);
+        setLanguageModalVisible(false);
+    };
+
     const configItems = [
         {
             key: lang.languages[selected].language,
             icon: "earth",
-            action: () => Alert.alert(lang.languages[selected].comingSoon),
+            action: () => setLanguageModalVisible(true),
             showArrow: true
         },
         {
             key: lang.languages[selected].theme,
-            icon: isDarkMode ? "bulb1" : "eyeo",
+            icon: isDarkMode ? "moon" : "bulb1",
             action: toggleTheme,
             showSwitch: true,
             switchValue: isDarkMode
@@ -162,6 +176,32 @@ const ConfigScreen = () => {
             fontSize: 16,
             fontWeight: '600',
         },
+        languageItem: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: 15,
+            borderRadius: 10,
+            marginVertical: 5,
+            backgroundColor: colors.background,
+        },
+        selectedLanguageItem: {
+            backgroundColor: colors.primary + '20',
+            borderWidth: 1,
+            borderColor: colors.primary,
+        },
+        languageFlag: {
+            fontSize: 24,
+            marginRight: 15,
+        },
+        languageName: {
+            fontSize: 16,
+            color: colors.text,
+            fontWeight: '500',
+        },
+        selectedLanguageName: {
+            color: colors.primary,
+            fontWeight: '600',
+        },
     });
 
     return (
@@ -242,6 +282,57 @@ const ConfigScreen = () => {
                         <TouchableOpacity 
                             style={styles.closeButton} 
                             onPress={() => setAboutModalVisible(false)}
+                        >
+                            <Text style={styles.closeButtonText}>
+                                Fechar
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={languageModalVisible}
+                onRequestClose={() => setLanguageModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>
+                            {lang.languages[selected].language}
+                        </Text>
+                        
+                        {availableLanguages.map((language) => (
+                            <TouchableOpacity
+                                key={language.code}
+                                style={[
+                                    styles.languageItem,
+                                    selected === language.code && styles.selectedLanguageItem
+                                ]}
+                                onPress={() => handleLanguageSelect(language.code)}
+                            >
+                                <Text style={styles.languageFlag}>{language.flag}</Text>
+                                <Text style={[
+                                    styles.languageName,
+                                    selected === language.code && styles.selectedLanguageName
+                                ]}>
+                                    {language.name}
+                                </Text>
+                                {selected === language.code && (
+                                    <Icon 
+                                        name="check" 
+                                        size={20} 
+                                        color={colors.primary} 
+                                        style={{ marginLeft: 'auto' }}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                        
+                        <TouchableOpacity 
+                            style={styles.closeButton} 
+                            onPress={() => setLanguageModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>
                                 Fechar

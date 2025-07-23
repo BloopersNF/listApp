@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { TestIds, InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
 import { useTheme } from "../context/ThemeContext";
+import { currencyToCents, centsToCurrency, addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
 
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
@@ -116,50 +117,82 @@ const ListScreen = ({route}) =>
 
     const addItem = async () => {
         if(item === "") {
-            Alert.alert("O item precisa de um nome valido.");
+            Alert.alert("O item precisa de um nome válido.");
             return;
         }
-        const newItem = new Item(item, price.replace(',', '.'), quantity.replace(',', '.'));
-        if(quantity === "" || quantity === "0")
-        {
-            newItem.quantity = "1";
-            
+        
+        if (price && !isValidCurrency(price)) {
+            Alert.alert("Preço inválido", "Por favor, insira um preço válido.");
+            return;
         }
-        if(price === "" || price === "0")
-            {
-                newItem.price = "0";
-                
-            }
-        const itemPrice = parseFloat(newItem.price).toFixed(2) * parseFloat(newItem.quantity).toFixed(2)
-        const newList = {...list}; // cria uma nova cópia do estado atual
-        newList.TotalPrice += itemPrice
-        newList.TotalUncheckedPrice += itemPrice;
-        newList.Items.push(newItem); // adiciona um item na lista
-        setList(newList); // atualiza o estado com a nova lista
+        
+        if (quantity && !isValidQuantity(quantity)) {
+            Alert.alert("Quantidade inválida", "Por favor, insira uma quantidade válida.");
+            return;
+        }
+        
+        const itemPrice = price || '0';
+        const itemQuantity = quantity || '1';
+        
+        const newItem = new Item(item, itemPrice, itemQuantity);
+        const itemTotalCents = multiplyCurrency(newItem.priceCents, newItem.quantity);
+        
+        const newList = {...list};
+        newList.TotalPrice = addCurrency(newList.TotalPrice, itemTotalCents);
+        newList.TotalUncheckedPrice = addCurrency(newList.TotalUncheckedPrice, itemTotalCents);
+        newList.Items.push(newItem);
+        
+        setList(newList);
         setItem("");
         setPrice("");
+        setQuantity("");
         await storeData(id, newList);
-        flatList.current.scrollToEnd()
+        flatList.current?.scrollToEnd();
     }
 
     const removeItem = async (index) => {
         const newList = {...list}; 
-        newList.TotalPrice -=  newList.Items[index].price * newList.Items[index].quantity;
-        newList.Items[index].checked ? newList.TotalCheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalUncheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
-        console.log(newList.TotalPrice);
-        newList.Items.splice(index, 1); 
-        setList(newList);
-        await storeData(id, newList);
-        let datas = await getData(id);
-        console.log(datas);
+        const itemToRemove = newList.Items[index];
+        
+        if (itemToRemove) {
+            const itemTotalCents = multiplyCurrency(itemToRemove.priceCents, itemToRemove.quantity);
+            
+            newList.TotalPrice = subtractCurrency(newList.TotalPrice, itemTotalCents);
+            
+            if (itemToRemove.checked) {
+                newList.TotalCheckedPrice = subtractCurrency(newList.TotalCheckedPrice, itemTotalCents);
+            } else {
+                newList.TotalUncheckedPrice = subtractCurrency(newList.TotalUncheckedPrice, itemTotalCents);
+            }
+            
+            newList.Items.splice(index, 1);
+            setList(newList);
+            await storeData(id, newList);
+        }
     }
     const priceCheckItem = async (index) => {
         const newList = {...list};
-        newList.Items[index].checked = !newList.Items[index].checked;
-        newList.Items[index].checked ? newList.TotalCheckedPrice += newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalUncheckedPrice += newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
-        newList.Items[index].checked ? newList.TotalUncheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.') : newList.TotalCheckedPrice -= newList.Items[index].price.replace(',', '.') * newList.Items[index].quantity.replace(',', '.');
-        setList(newList);
-        await storeData(id, newList);
+        const item = newList.Items[index];
+        
+        if (item) {
+            const itemTotalCents = multiplyCurrency(item.priceCents, item.quantity);
+            
+            // Toggle the checked status
+            newList.Items[index].checked = !newList.Items[index].checked;
+            
+            if (newList.Items[index].checked) {
+                // Item was unchecked, now checked
+                newList.TotalCheckedPrice = addCurrency(newList.TotalCheckedPrice, itemTotalCents);
+                newList.TotalUncheckedPrice = subtractCurrency(newList.TotalUncheckedPrice, itemTotalCents);
+            } else {
+                // Item was checked, now unchecked
+                newList.TotalCheckedPrice = subtractCurrency(newList.TotalCheckedPrice, itemTotalCents);
+                newList.TotalUncheckedPrice = addCurrency(newList.TotalUncheckedPrice, itemTotalCents);
+            }
+            
+            setList(newList);
+            await storeData(id, newList);
+        }
     }
         
 
@@ -170,7 +203,7 @@ const ListScreen = ({route}) =>
 return (
     <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"} 
-        style={{flex:1, backgroundColor:"#eee"}}
+        style={{flex:1, backgroundColor: colors.background}}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
         <SafeAreaView style={{flex:1, backgroundColor: colors.background}} >
@@ -194,7 +227,9 @@ return (
                                 <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>{item.name}</Text>
                             </View>
                             <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>${parseFloat(item.price).toFixed(2)}</Text>
+                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>
+                                    {formatCurrency(item.priceCents)}
+                                </Text>
                             </View>
                             <View style={styles.description}>
                                 <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>{item.quantity}</Text>
@@ -209,44 +244,50 @@ return (
                     list?.Items?.length > 0 ?
                     <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
                         <View style={{flexDirection: "row"}}>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total marcados: $ {parseFloat(list.TotalCheckedPrice || 0).toFixed(2)}</Text>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}> + </Text>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total desmarcados: $ {parseFloat(list.TotalUncheckedPrice || 0).toFixed(2)}</Text>
+                            <Text style={{color: colors.success, fontWeight:"bold"}}>
+                                Total marcados: {formatCurrency(list.TotalCheckedPrice || 0)}
+                            </Text>
+                            <Text style={{color: colors.success, fontWeight:"bold"}}> + </Text>
+                            <Text style={{color: colors.success, fontWeight:"bold"}}>
+                                Total desmarcados: {formatCurrency(list.TotalUncheckedPrice || 0)}
+                            </Text>
                         </View>
-                        <Text style={{color:"#2a2", fontWeight:"bold"}}>Preço total: $ {parseFloat(list.TotalPrice || 0).toFixed(2)}</Text>
+                        <Text style={{color: colors.success, fontWeight:"bold"}}>
+                            Preço total: {formatCurrency(list.TotalPrice || 0)}
+                        </Text>
                     </View> : null
                 )}
                 ListEmptyComponent={() => (
                     <View style={{alignItems:"center", justifyContent:"center", margin:100}}>
-                        <Icon name="filetext1" size={80} color="#bbb"></Icon>
-                        <Text style={{color:"#bbb", marginTop:20}} >Sua lista está vazia.</Text>
+                        <Icon name="filetext1" size={80} color={colors.textTertiary}></Icon>
+                        <Text style={{color: colors.textTertiary, marginTop:20}} >Sua lista está vazia.</Text>
                     </View>
                 )
                 }
                 />
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
                 <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
                     <TextInput
                         placeholder="Item"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={colors.textTertiary}
                         value={item}
                         onChangeText={(text) => setItem(text)}
-                        style={styles.itemInput}
+                        style={[styles.itemInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
                     />
                     <TextInput
                         placeholder="preço"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={colors.textTertiary}
                         value={price}
                         onChangeText={(text) => setPrice(text)}
-                        style={styles.itemPrice}
+                        style={[styles.itemPrice, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
                         keyboardType="numeric"
                     />
                     <TextInput
                         placeholder="qtd"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={colors.textTertiary}
                         value={quantity}
                         onChangeText={(text) => setQuantity(text)}
-                        style={styles.itemQuantity}
+                        style={[styles.itemQuantity, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
                         keyboardType="numeric"
                     />
                     <TouchableOpacity onPress={() => {addItem()}}>
@@ -260,11 +301,9 @@ return (
 }
 styles = StyleSheet.create({
     inputContainer: {
-        backgroundColor: "#eee",
         paddingVertical: 10,
         paddingHorizontal: 5,
         borderTopWidth: 1,
-        borderTopColor: "#ddd"
     },
     checkCircle: {
         width: 30,
@@ -287,34 +326,25 @@ styles = StyleSheet.create({
     itemInput: {
         width: "45%",
         padding: 10,
-        borderColor: "#ddd",
         borderWidth: 1,
         margin: 5,
         borderRadius: 20,
-        backgroundColor: "#fff",
-        color: "#000"
     },
     itemPrice: {
         width: "20%",
         padding: 10,
-        borderColor: "#ddd",
         borderWidth: 1,
         margin: 5,
         borderRadius: 20,
-        backgroundColor: "#fff",
         textAlign: "center",
-        color: "#000"
     },
     itemQuantity: {
         width: "10%",
         padding: 10,
-        borderColor: "#ddd",
         borderWidth: 1,
         margin: 5,
         borderRadius: 20,
-        backgroundColor: "#fff",
         textAlign: "center",
-        color: "#000"
     },
     description: {
         width: "25%",
