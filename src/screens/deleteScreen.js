@@ -4,10 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 // Tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
     const { colors } = useTheme();
+    const { getText } = useLanguage();
     const [keys, setKeys] = useState([]);
     const [deletedLists, setDeletedLists] = useState([]);
 
@@ -127,25 +129,25 @@ const DeleteScreen = ({ navigation }) => {
             {deletedLists.length > 0 ? (
                 <>
                     <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                        <Text style={[styles.headerTitle, { color: colors.text }]}>Listas Deletadas</Text>
+                        <Text style={[styles.headerTitle, { color: colors.text }]}>{getText('deletedLists')}</Text>
                         <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-                            {deletedLists.length} {deletedLists.length === 1 ? 'lista' : 'listas'} na lixeira
+                            {deletedLists.length} {deletedLists.length === 1 ? getText('listInTrash') : getText('listsInTrash')}
                         </Text>
                         <TouchableOpacity 
                             style={[styles.clearAllButton, { backgroundColor: colors.danger }]}
                             onPress={() => {
                                 Alert.alert(
-                                    "Limpar Lixeira",
-                                    "Você realmente deseja deletar permanentemente todas as listas da lixeira?",
+                                    getText('clearTrashConfirm'),
+                                    getText('clearTrashMessage'),
                                     [
-                                        { text: "Cancelar", style: "cancel" },
-                                        { text: "Limpar Tudo", onPress: clearAllDeletedLists, style: "destructive" }
+                                        { text: getText('cancel'), style: "cancel" },
+                                        { text: getText('clearAll'), onPress: clearAllDeletedLists, style: "destructive" }
                                     ]
                                 );
                             }}
                         >
                             <Icon name="delete" size={16} color="#fff" />
-                            <Text style={styles.clearAllText}>Limpar Tudo</Text>
+                            <Text style={styles.clearAllText}>{getText('clearAll')}</Text>
                         </TouchableOpacity>
                     </View>
                     
@@ -164,7 +166,7 @@ const DeleteScreen = ({ navigation }) => {
                                                     {item.Name}
                                                 </Text>
                                                 <Text style={[styles.listDetails, { color: colors.textTertiary }]}>
-                                                    {item.Items?.length || 0} itens • Deletada em {deletedDate}
+                                                    {item.Items?.length || 0} {getText('items')} • {getText('deletedOn')} {deletedDate}
                                                 </Text>
                                             </View>
                                             
@@ -174,24 +176,24 @@ const DeleteScreen = ({ navigation }) => {
                                                     onPress={() => restoreList(item.Id)}
                                                 >
                                                     <Icon name="reload1" size={18} color="#fff" />
-                                                    <Text style={styles.actionText}>Restaurar</Text>
+                                                    <Text style={styles.actionText}>{getText('restore')}</Text>
                                                 </TouchableOpacity>
                                                 
                                                 <TouchableOpacity 
                                                     style={[styles.actionButton, styles.deleteButton, { backgroundColor: colors.danger }]}
                                                     onPress={() => {
                                                         Alert.alert(
-                                                            "Deletar Permanentemente",
-                                                            `Você realmente deseja deletar "${item.Name}" permanentemente? Esta ação não pode ser desfeita.`,
+                                                            getText('deleteForever'),
+                                                            getText('deleteForeverMessage', { 0: item.Name }),
                                                             [
-                                                                { text: "Cancelar", style: "cancel" },
-                                                                { text: "Deletar", onPress: async () => await deleteList(item.Id), style: "destructive" }
+                                                                { text: getText('cancel'), style: "cancel" },
+                                                                { text: getText('delete'), onPress: async () => await deleteList(item.Id), style: "destructive" }
                                                             ]
                                                         );
                                                     }}
                                                 >
                                                     <Icon name="delete" size={18} color="#fff" />
-                                                    <Text style={styles.actionText}>Deletar</Text>
+                                                    <Text style={styles.actionText}>{getText('delete')}</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -206,9 +208,9 @@ const DeleteScreen = ({ navigation }) => {
             ) : (
                 <View style={styles.emptyContainer}>
                     <Icon name="delete" size={80} color={colors.textTertiary} />
-                    <Text style={[styles.emptyTitle, { color: colors.text }]}>Lixeira Vazia</Text>
+                    <Text style={[styles.emptyTitle, { color: colors.text }]}>{getText('emptyTrash')}</Text>
                     <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-                        Não há listas deletadas no momento
+                        {getText('emptyTrashMessage')}
                     </Text>
                 </View>
             )}

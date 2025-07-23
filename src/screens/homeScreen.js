@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import InterstitialAdManager from "../components/InterstitialAdManager";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 import { formatCurrency } from "../utils/currency";
 
 
@@ -95,6 +96,7 @@ const cleanCorruptedData = async () => {
 
 const HomeScreen = ({ navigation }) => {
     const { colors } = useTheme();
+    const { getText } = useLanguage();
     const [modalVisible, setModalVisible] = useState(false);
     const [listName, setListName] = useState('');
     const [keys, setKeys] = useState([]);
@@ -185,7 +187,7 @@ const HomeScreen = ({ navigation }) => {
     
     const createList = async () => { 
         if(!listName || listName.trim() === '') {
-            Alert.alert("Nome da lista inválido");
+            Alert.alert(getText('invalidListName'));
             return;
         }
         
@@ -194,7 +196,7 @@ const HomeScreen = ({ navigation }) => {
             const newDate = formatDate(new Date());
             
             if (!newId) {
-                Alert.alert("Erro ao gerar ID da lista");
+                Alert.alert(getText('errorGeneratingId'));
                 return;
             }
             
@@ -208,7 +210,7 @@ const HomeScreen = ({ navigation }) => {
             navigation.navigate('List', {name: listName.trim(), id: String(newId), date: newDate});
         } catch (error) {
             console.log('Error creating list:', error);
-            Alert.alert("Erro ao criar lista");
+            Alert.alert(getText('errorCreatingList'));
         }
     };
     
@@ -249,7 +251,7 @@ const HomeScreen = ({ navigation }) => {
                             </View>
                             <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
                                 <Text style={{fontSize:10, color: colors.textTertiary}}>
-                                    {list.Items?.length || 0} items
+                                    {list.Items?.length || 0} {getText('items')}
                                 </Text>
                                 <Text style={{fontSize:10, color: colors.textTertiary}}>
                                     {list.Date || ''}
@@ -278,19 +280,20 @@ const HomeScreen = ({ navigation }) => {
             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{flex:1}}>
                 <View style={styles.centeredView}>
                     <View style={[styles.modalView, { backgroundColor: colors.surface }]}>
-                        <Text style={{color: colors.textSecondary}}>Nome da Lista</Text>
+                        <Text style={{color: colors.textSecondary}}>{getText('listNamePlaceholder')}</Text>
                         <TextInput
                             style={[styles.textInput, { borderColor: colors.border, color: colors.text }]}
                             onChangeText={setListName}
                             value={listName}
+                            placeholder={getText('listNamePlaceholder')}
                             placeholderTextColor={colors.textSecondary}
                         />
                         <View style={{flexDirection: "row", justifyContent:"space-between"}}>
-                            <TouchableOpacity onPress={closeModal} title="Fechar">
+                            <TouchableOpacity onPress={closeModal} title={getText('close')}>
                                 <Icon name="closecircleo" size={50} color="#E15141"></Icon>
                             </TouchableOpacity>
                             <View style={{marginRight:100}}></View>
-                            <TouchableOpacity onPress={createList} title="Criar Lista">
+                            <TouchableOpacity onPress={createList} title={getText('createList')}>
                                 <Icon name="checkcircleo" size={50} color="#4151E1"></Icon>
                             </TouchableOpacity>
                         </View>

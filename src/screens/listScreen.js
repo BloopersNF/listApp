@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { TestIds, InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 import { currencyToCents, centsToCurrency, addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
 
 
@@ -40,6 +41,7 @@ const getData = async (key) => {
 const ListScreen = ({route}) => 
     {
     const { colors } = useTheme();
+    const { getText } = useLanguage();
     const {name, id, date} = route.params;
     const renderListData = async () => {
         try {
@@ -117,17 +119,17 @@ const ListScreen = ({route}) =>
 
     const addItem = async () => {
         if(item === "") {
-            Alert.alert("O item precisa de um nome válido.");
+            Alert.alert(getText('validNameRequired'));
             return;
         }
         
         if (price && !isValidCurrency(price)) {
-            Alert.alert("Preço inválido", "Por favor, insira um preço válido.");
+            Alert.alert(getText('invalidPrice'), getText('invalidPriceMessage'));
             return;
         }
         
         if (quantity && !isValidQuantity(quantity)) {
-            Alert.alert("Quantidade inválida", "Por favor, insira uma quantidade válida.");
+            Alert.alert(getText('invalidQuantity'), getText('invalidQuantityMessage'));
             return;
         }
         
@@ -245,22 +247,22 @@ return (
                     <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
                         <View style={{flexDirection: "row"}}>
                             <Text style={{color: colors.success, fontWeight:"bold"}}>
-                                Total marcados: {formatCurrency(list.TotalCheckedPrice || 0)}
+                                {getText('totalChecked')}: {formatCurrency(list.TotalCheckedPrice || 0)}
                             </Text>
                             <Text style={{color: colors.success, fontWeight:"bold"}}> + </Text>
                             <Text style={{color: colors.success, fontWeight:"bold"}}>
-                                Total desmarcados: {formatCurrency(list.TotalUncheckedPrice || 0)}
+                                {getText('totalUnchecked')}: {formatCurrency(list.TotalUncheckedPrice || 0)}
                             </Text>
                         </View>
                         <Text style={{color: colors.success, fontWeight:"bold"}}>
-                            Preço total: {formatCurrency(list.TotalPrice || 0)}
+                            {getText('totalPrice')}: {formatCurrency(list.TotalPrice || 0)}
                         </Text>
                     </View> : null
                 )}
                 ListEmptyComponent={() => (
                     <View style={{alignItems:"center", justifyContent:"center", margin:100}}>
                         <Icon name="filetext1" size={80} color={colors.textTertiary}></Icon>
-                        <Text style={{color: colors.textTertiary, marginTop:20}} >Sua lista está vazia.</Text>
+                        <Text style={{color: colors.textTertiary, marginTop:20}} >{getText('emptyListMessage')}</Text>
                     </View>
                 )
                 }
@@ -268,14 +270,14 @@ return (
             <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
                 <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
                     <TextInput
-                        placeholder="Item"
+                        placeholder={getText('itemPlaceholder')}
                         placeholderTextColor={colors.textTertiary}
                         value={item}
                         onChangeText={(text) => setItem(text)}
                         style={[styles.itemInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
                     />
                     <TextInput
-                        placeholder="preço"
+                        placeholder={getText('pricePlaceholder')}
                         placeholderTextColor={colors.textTertiary}
                         value={price}
                         onChangeText={(text) => setPrice(text)}
@@ -283,7 +285,7 @@ return (
                         keyboardType="numeric"
                     />
                     <TextInput
-                        placeholder="qtd"
+                        placeholder={getText('quantityPlaceholder')}
                         placeholderTextColor={colors.textTertiary}
                         value={quantity}
                         onChangeText={(text) => setQuantity(text)}

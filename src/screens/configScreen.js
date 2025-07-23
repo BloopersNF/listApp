@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { FlatList, Text, StyleSheet, View, SafeAreaView, TouchableOpacity, Switch, Modal, Alert, Linking } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
-import lang from "../langs/lang";
 import { useTheme } from "../context/ThemeContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const ConfigScreen = () => {
     const { isDarkMode, toggleTheme, colors } = useTheme();
-    const [selected, setSelected] = useState("en");
+    const { selectedLanguage, changeLanguage, getText, availableLanguages } = useLanguage();
     const [aboutModalVisible, setAboutModalVisible] = useState(false);
     const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
     const handleContactUs = () => {
-        const email = lang.languages[selected].contactEmail;
+        const email = getText('contactEmail');
         const subject = "List App Support";
         const body = "Hello, I need help with...";
         const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -21,51 +21,43 @@ const ConfigScreen = () => {
                 if (supported) {
                     Linking.openURL(mailtoUrl);
                 } else {
-                    Alert.alert("Email not available", `Please contact us at: ${email}`);
+                    Alert.alert(getText('emailNotAvailable'), getText('contactEmailMessage', { 0: email }));
                 }
             })
             .catch(() => {
-                Alert.alert("Email not available", `Please contact us at: ${email}`);
+                Alert.alert(getText('emailNotAvailable'), getText('contactEmailMessage', { 0: email }));
             });
     };
 
-    const availableLanguages = [
-        { code: "en", name: "English", flag: "🇺🇸" },
-        { code: "pt", name: "Português", flag: "🇧🇷" },
-        { code: "es", name: "Español", flag: "🇪🇸" },
-        { code: "fr", name: "Français", flag: "🇫🇷" },
-        { code: "cn", name: "中文", flag: "🇨🇳" }
-    ];
-
     const handleLanguageSelect = (languageCode) => {
-        setSelected(languageCode);
+        changeLanguage(languageCode);
         setLanguageModalVisible(false);
     };
 
     const configItems = [
         {
-            key: lang.languages[selected].language,
+            key: getText('language'),
             icon: "earth",
             action: () => setLanguageModalVisible(true),
             showArrow: true
         },
         {
-            key: lang.languages[selected].theme,
+            key: getText('theme'),
             icon: isDarkMode ? "moon" : "bulb1",
             action: toggleTheme,
             showSwitch: true,
             switchValue: isDarkMode
         },
         {
-            key: lang.languages[selected].about,
+            key: getText('about'),
             icon: "infocirlceo",
             action: () => setAboutModalVisible(true),
             showArrow: true
         },
         {
-            key: lang.languages[selected].bePremium,
+            key: getText('bePremium'),
             icon: "star",
-            action: () => Alert.alert(lang.languages[selected].comingSoon),
+            action: () => Alert.alert(getText('comingSoon')),
             showArrow: true,
             isPremium: true
         }
@@ -261,13 +253,13 @@ const ConfigScreen = () => {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>
-                            {lang.languages[selected].about}
+                            {getText('about')}
                         </Text>
                         <Text style={styles.modalText}>
-                            {lang.languages[selected].appVersion}
+                            {getText('appVersion')}
                         </Text>
                         <Text style={styles.modalVersion}>
-                            v{lang.languages[selected].version}
+                            v{getText('version')}
                         </Text>
                         
                         <TouchableOpacity 
@@ -275,7 +267,7 @@ const ConfigScreen = () => {
                             onPress={handleContactUs}
                         >
                             <Text style={styles.contactButtonText}>
-                                {lang.languages[selected].contactUs}
+                                {getText('contactUs')}
                             </Text>
                         </TouchableOpacity>
                         
@@ -284,7 +276,7 @@ const ConfigScreen = () => {
                             onPress={() => setAboutModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>
-                                Fechar
+                                {getText('close')}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -300,7 +292,7 @@ const ConfigScreen = () => {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>
-                            {lang.languages[selected].language}
+                            {getText('language')}
                         </Text>
                         
                         {availableLanguages.map((language) => (
@@ -308,18 +300,18 @@ const ConfigScreen = () => {
                                 key={language.code}
                                 style={[
                                     styles.languageItem,
-                                    selected === language.code && styles.selectedLanguageItem
+                                    selectedLanguage === language.code && styles.selectedLanguageItem
                                 ]}
                                 onPress={() => handleLanguageSelect(language.code)}
                             >
                                 <Text style={styles.languageFlag}>{language.flag}</Text>
                                 <Text style={[
                                     styles.languageName,
-                                    selected === language.code && styles.selectedLanguageName
+                                    selectedLanguage === language.code && styles.selectedLanguageName
                                 ]}>
                                     {language.name}
                                 </Text>
-                                {selected === language.code && (
+                                {selectedLanguage === language.code && (
                                     <Icon 
                                         name="check" 
                                         size={20} 
@@ -335,7 +327,7 @@ const ConfigScreen = () => {
                             onPress={() => setLanguageModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>
-                                Fechar
+                                {getText('close')}
                             </Text>
                         </TouchableOpacity>
                     </View>

@@ -6,6 +6,7 @@ import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
 import mobileAds from 'react-native-google-mobile-ads';
 import { ThemeProvider } from './src/context/ThemeContext';
+import { LanguageProvider } from './src/context/LanguageContext';
 import 'expo-dev-client';
 
 const firebaseConfig = {
@@ -30,11 +31,13 @@ const App = () => {
   }, []);
 
   return (
-    <ThemeProvider>
-      <NavigationContainer>
-        <StackScreen/>
-      </NavigationContainer>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <NavigationContainer>
+          <StackScreen/>
+        </NavigationContainer>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 export default App;
