@@ -5,12 +5,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import MainScreen from './mainScreen';
 import ListScreen from './listScreen';
 import AdBanner from '../components/AdBanner';
+import { useTheme } from '../context/ThemeContext';
 
 const Stack = createStackNavigator();
 
 const StackScreen = ({navigation}) =>{
+    const { colors } = useTheme();
+    
     return(
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <AdBanner />
             <View style={styles.navigatorContainer}>
                 <Stack.Navigator screenOptions={{headerShown: false}}>
@@ -25,7 +28,6 @@ const StackScreen = ({navigation}) =>{
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     navigatorContainer: {
         flex: 1,

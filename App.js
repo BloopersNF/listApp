@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
 import mobileAds from 'react-native-google-mobile-ads';
+import { ThemeProvider } from './src/context/ThemeContext';
 import 'expo-dev-client';
 
 const firebaseConfig = {
@@ -29,9 +30,11 @@ const App = () => {
   }, []);
 
   return (
-    <NavigationContainer>
-      <StackScreen/>
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <StackScreen/>
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }
 export default App;

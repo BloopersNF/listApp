@@ -6,6 +6,7 @@ import Item from "../components/Item";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { TestIds, InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
+import { useTheme } from "../context/ThemeContext";
 
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
@@ -37,6 +38,7 @@ const getData = async (key) => {
 
 const ListScreen = ({route}) => 
     {
+    const { colors } = useTheme();
     const {name, id, date} = route.params;
     const renderListData = async () => {
         try {
@@ -58,11 +60,13 @@ const ListScreen = ({route}) =>
 
     //percorrer a lista atual para verificar os items que estão com o check true
     const checkItems = () => {
-        list.Items.map((item) => {
-            if(item.checked == true){
-                setCheckList([...checkList, item]);
-            }
-        })
+        if (list?.Items) {
+            list.Items.map((item) => {
+                if(item.checked == true){
+                    setCheckList([...checkList, item]);
+                }
+            })
+        }
     }
 
     useEffect(() => {
@@ -169,12 +173,12 @@ return (
         style={{flex:1, backgroundColor:"#eee"}}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
-        <SafeAreaView style={{flex:1, backgroundColor:"#eee"}} >
+        <SafeAreaView style={{flex:1, backgroundColor: colors.background}} >
             <FlatList
                 ref ={flatList}
                 initialNumToRender={14}
                 keyboardDismissMode="on-drag"
-                data={list.Items}
+                data={list?.Items || []}
                 keyExtractor={(item, index) => index.toString()}
                 contentContainerStyle={{paddingBottom: 80}}
                 renderItem={({ item, index }) => (
@@ -182,18 +186,18 @@ return (
                         <TouchableOpacity style={{margin:5}} onPress={() => priceCheckItem(index)}>
                             {item.checked ?
                             <Icon name="checkcircle" size={30} color="#4151E1"></Icon>:
-                            <View style={styles.checkCircle}></View>}
+                            <View style={[styles.checkCircle, { borderColor: colors.border }]}></View>}
                         </TouchableOpacity>
 
-                        <View key={index} style={styles.itemBox}>
+                        <View key={index} style={[styles.itemBox, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
                             <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
+                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>{item.name}</Text>
                             </View>
                             <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail">${parseFloat(item.price).toFixed(2)}</Text>
+                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>${parseFloat(item.price).toFixed(2)}</Text>
                             </View>
                             <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail">{item.quantity}</Text>
+                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>{item.quantity}</Text>
                             </View>
                             <TouchableOpacity onPress={() => removeItem(index)}>
                                 <Icon name="delete" size={20} color="#f00"/>
@@ -202,14 +206,14 @@ return (
                     </View>
                 )}
                 ListFooterComponent={() => (
-                    list.Items.length > 0 ?
+                    list?.Items?.length > 0 ?
                     <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
                         <View style={{flexDirection: "row"}}>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total marcados: $ {parseFloat(list.TotalCheckedPrice).toFixed(2)}</Text>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total marcados: $ {parseFloat(list.TotalCheckedPrice || 0).toFixed(2)}</Text>
                             <Text style={{color:"#2a2", fontWeight:"bold"}}> + </Text>
-                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total desmarcados: $ {parseFloat(list.TotalUncheckedPrice).toFixed(2)}</Text>
+                            <Text style={{color:"#2a2", fontWeight:"bold"}}>Total desmarcados: $ {parseFloat(list.TotalUncheckedPrice || 0).toFixed(2)}</Text>
                         </View>
-                        <Text style={{color:"#2a2", fontWeight:"bold"}}>Preço total: $ {parseFloat(list.TotalPrice).toFixed(2)}</Text>
+                        <Text style={{color:"#2a2", fontWeight:"bold"}}>Preço total: $ {parseFloat(list.TotalPrice || 0).toFixed(2)}</Text>
                     </View> : null
                 )}
                 ListEmptyComponent={() => (
@@ -267,10 +271,8 @@ styles = StyleSheet.create({
         height: 30,
         borderRadius: 15,
         borderWidth: 1,
-        borderColor: "#000",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#fff",
     },
     itemBox: {
         flex:1,
@@ -279,10 +281,8 @@ styles = StyleSheet.create({
         alignItems: "center",
         padding: 10,
         margin: 5,
-        borderColor: "#fff",
         borderWidth: 1,
         borderRadius: 20,
-        backgroundColor: "#fff",
     },
     itemInput: {
         width: "45%",
@@ -319,8 +319,6 @@ styles = StyleSheet.create({
     description: {
         width: "25%",
         padding: 0,
-        borderColor: "#fff",
-        backgroundColor: "#fff"
     }
 })
 

@@ -7,6 +7,7 @@ import List from "../components/List";
 import { useFocusEffect } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import InterstitialAdManager from "../components/InterstitialAdManager";
+import { useTheme } from "../context/ThemeContext";
 
 
 
@@ -22,13 +23,21 @@ const getData = async (key) => {
 
 const storeData = async (key, value) => {
     try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem(key, jsonValue)
+        if (!key || key.trim() === '') {
+            console.log('Invalid key provided to storeData:', key);
+            return;
+        }
+        if (!value) {
+            console.log('Invalid value provided to storeData:', value);
+            return;
+        }
+        const jsonValue = JSON.stringify(value);
+        await AsyncStorage.setItem(key, jsonValue);
     }
     catch (e) {
-        console.log(e);
-        }
+        console.log('Error in storeData:', e);
     }
+}
 
 function formatDate(date) {
     const day = date.getDate().toString().padStart(2, '0'); // Adiciona um zero à esquerda se necessário
@@ -46,8 +55,45 @@ const clearAllLists = async () => {
     }
 }
 
+const cleanCorruptedData = async () => {
+    try {
+        const allKeys = await AsyncStorage.getAllKeys();
+        const keysToRemove = [];
+        
+        for (const key of allKeys) {
+            if (!key || key.trim() === '') {
+                keysToRemove.push(key);
+                continue;
+            }
+            
+            try {
+                const data = await AsyncStorage.getItem(key);
+                if (!data) {
+                    keysToRemove.push(key);
+                    continue;
+                }
+                
+                const parsedData = JSON.parse(data);
+                if (!parsedData || !parsedData.Name || !parsedData.Id) {
+                    keysToRemove.push(key);
+                }
+            } catch (parseError) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        if (keysToRemove.length > 0) {
+            await AsyncStorage.multiRemove(keysToRemove);
+            console.log('Removed corrupted keys:', keysToRemove);
+        }
+    } catch(e) {
+        console.log('Error cleaning corrupted data:', e);
+    }
+}
+
 
 const HomeScreen = ({ navigation }) => {
+    const { colors } = useTheme();
     const [modalVisible, setModalVisible] = useState(false);
     const [listName, setListName] = useState('');
     const [keys, setKeys] = useState([]);
@@ -56,23 +102,55 @@ const HomeScreen = ({ navigation }) => {
 
     getAllKeys = async () => {
         try {
-            all = await AsyncStorage.getAllKeys();
+            const all = await AsyncStorage.getAllKeys();
             setKeys(all);
+            return all;
         } catch(e) {
             console.log(e);
+            return [];
         }
-        return keys;
     }
 
     const fetchLists = async () => {
-        const fetchedKeys = await getAllKeys();
-        const fetchedLists = await Promise.all(fetchedKeys.map(key => getData(key)));
-        setLists(fetchedLists.filter(list => list !== null));
+        try {
+            const fetchedKeys = await getAllKeys();
+            if (!fetchedKeys || fetchedKeys.length === 0) {
+                setLists([]);
+                return;
+            }
+            
+            const fetchedLists = await Promise.all(
+                fetchedKeys
+                    .filter(key => key && key.trim() !== '') // Filtra chaves válidas
+                    .map(async (key) => {
+                        try {
+                            return await getData(key);
+                        } catch (error) {
+                            console.log('Error fetching data for key:', key, error);
+                            return null;
+                        }
+                    })
+            );
+            
+            const filteredLists = fetchedLists.filter(list => 
+                list !== null && 
+                list !== undefined && 
+                list.Name && 
+                list.Name.trim() !== '' &&
+                list.Id
+            );
+            
+            setLists(filteredLists);
+        } catch (error) {
+            console.log('Error in fetchLists:', error);
+            setLists([]);
+        }
     };
 
 
     useEffect(() => {
         const fetchData = async () => {
+            await cleanCorruptedData();
             await getAllKeys();
             await fetchLists();
         } 
@@ -105,59 +183,83 @@ const HomeScreen = ({ navigation }) => {
     }
     
     const createList = async () => { 
-        if(listName == '') 
-        {
-                Alert.alert("Nome da lista inválido");
-                return;
+        if(!listName || listName.trim() === '') {
+            Alert.alert("Nome da lista inválido");
+            return;
         }
-        const newId = uuid.v4();
-        const newDate = formatDate(new Date());
-        setId(newId);
-        console.log(newId);
-        storeData(newId, new List(listName, [], 0, false, newId, newDate));
-        setListName('');
-        const allKeys = await getAllKeys();
-        setKeys(allKeys);
-        await fetchLists();
-        setModalVisible(false);
-        navigation.navigate('List', {name: listName, id: String(newId), date: newDate});
+        
+        try {
+            const newId = uuid.v4();
+            const newDate = formatDate(new Date());
+            
+            if (!newId) {
+                Alert.alert("Erro ao gerar ID da lista");
+                return;
+            }
+            
+            const newList = new List(listName.trim(), [], 0, false, newId, newDate);
+            console.log('Creating list with ID:', newId);
+            
+            await storeData(newId, newList);
+            setListName('');
+            await fetchLists();
+            setModalVisible(false);
+            navigation.navigate('List', {name: listName.trim(), id: String(newId), date: newDate});
+        } catch (error) {
+            console.log('Error creating list:', error);
+            Alert.alert("Erro ao criar lista");
+        }
     };
     
     return(
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <FlatList
                 data={Object.keys(lists)}
                 renderItem={({item}) =>{
-
-                    if (!lists[item].Deleted)
-                        {
-                            return(
-                                <TouchableOpacity style={styles.listItem} onPress={() => navigation.navigate('List', {name: lists[item].Name, id: lists[item].Id})}>
-                                    <View >
-                                        <View style={{flexDirection: "row", width:"100%", justifyContent: "space-between", alignItems:"center"}}>
-                                            <Text>{lists[item].Name}</Text>
-                                            <TouchableOpacity onPress={async () => {
-                                                const deletedList = lists[item];
-                                                deletedList.Deleted = true;
-                                                deletedList.DeletedAt = new Date().toISOString();
-                                                console.log(deletedList);
-                                                storeData(deletedList.Id, deletedList);
-                                                await fetchLists();
-                                            }}>
-                                                <Icon name="delete" size={24} color="#e22"/>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-                                    <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
-                                        <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Items.length} items</Text>
-                                        <Text style={{fontSize:10, color:"#bbb"}}>{lists[item].Date}</Text>
-                                        <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>${lists[item].TotalPrice}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            )
-                        } 
+                    const list = lists[item];
+                    
+                    // Verificações de segurança
+                    if (!list || list.Deleted || !list.Name || !list.Id) {
+                        return null;
                     }
-                }
+
+                    return(
+                        <TouchableOpacity 
+                            style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]} 
+                            onPress={() => navigation.navigate('List', {name: list.Name, id: list.Id})}
+                        >
+                            <View>
+                                <View style={{flexDirection: "row", width:"100%", justifyContent: "space-between", alignItems:"center"}}>
+                                    <Text style={{ color: colors.text }} numberOfLines={1}>{list.Name}</Text>
+                                    <TouchableOpacity onPress={async () => {
+                                        try {
+                                            const deletedList = {...list};
+                                            deletedList.Deleted = true;
+                                            deletedList.DeletedAt = new Date().toISOString();
+                                            await storeData(deletedList.Id, deletedList);
+                                            await fetchLists();
+                                        } catch (error) {
+                                            console.log('Error deleting list:', error);
+                                        }
+                                    }}>
+                                        <Icon name="delete" size={24} color="#e22"/>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
+                                <Text style={{fontSize:10, color: colors.textTertiary}}>
+                                    {list.Items?.length || 0} items
+                                </Text>
+                                <Text style={{fontSize:10, color: colors.textTertiary}}>
+                                    {list.Date || ''}
+                                </Text>
+                                <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>
+                                    ${Number(list.TotalPrice || 0).toFixed(2)}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    )
+                }}
                 keyExtractor={(item) => item}
                 initialNumToRender={10}
                 removeClippedSubviews={true}
@@ -174,12 +276,13 @@ const HomeScreen = ({ navigation }) => {
             >
             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{flex:1}}>
                 <View style={styles.centeredView}>
-                    <View style={styles.modalView}>
-                        <Text style={{color:"#bdbdbd"}}>Nome da Lista</Text>
+                    <View style={[styles.modalView, { backgroundColor: colors.surface }]}>
+                        <Text style={{color: colors.textSecondary}}>Nome da Lista</Text>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, { borderColor: colors.border, color: colors.text }]}
                             onChangeText={setListName}
                             value={listName}
+                            placeholderTextColor={colors.textSecondary}
                         />
                         <View style={{flexDirection: "row", justifyContent:"space-between"}}>
                             <TouchableOpacity onPress={closeModal} title="Fechar">
@@ -201,7 +304,6 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#eee"
     },
     centeredView: {
         flex: 1,
@@ -211,7 +313,6 @@ const styles = StyleSheet.create({
     },
     modalView: {
         margin: 20,
-        backgroundColor: "white",
         borderRadius: 40,
         padding: 35,
         alignItems: "center",
@@ -231,13 +332,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         padding: 10,
         borderRadius: 15,
-        borderColor: "#ddd"
     },
     listItem: {
         padding: 20,
-        borderColor: "#fff",
         borderWidth: 1,
-        backgroundColor: "#fff",
         margin: 5,
         borderRadius: 10,
         justifyContent: "space-between",

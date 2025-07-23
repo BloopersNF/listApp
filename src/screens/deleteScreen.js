@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {Text, StyleSheet, View, TouchableOpacity, FlatList, Alert } from "react-native";
+import {Text, StyleSheet, View, TouchableOpacity, FlatList, Alert, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 // Tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
+    const { colors } = useTheme();
     const [keys, setKeys] = useState([]);
     const [deletedLists, setDeletedLists] = useState([]);
 
@@ -121,18 +123,21 @@ const DeleteScreen = ({ navigation }) => {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <FlatList
                 data={deletedLists}
                 renderItem={({ item }) => {
                     if (item.Deleted)
                         {
                             return(
-                                <TouchableOpacity style={styles.listItem} onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}>
-                                    <Text style={styles.listName}>{item.Name}</Text>
+                                <TouchableOpacity 
+                                    style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]} 
+                                    onPress={() => Alert.alert("Essa lista será deletada em breve. Delete agora ou restaure.")}
+                                >
+                                    <Text style={[styles.listName, { color: colors.text }]}>{item.Name}</Text>
                                     <View style={styles.buttons}>
                                         <TouchableOpacity onPress={() => restoreList(item.Id)}>
-                                        <Icon name="reload1" size={20} color="#000" />
+                                        <Icon name="reload1" size={20} color={colors.primary} />
                                         </TouchableOpacity>
                                         <TouchableOpacity onPress={() => {
                                             Alert.alert(
@@ -148,7 +153,7 @@ const DeleteScreen = ({ navigation }) => {
                                                 { cancelable: false }
                                             );
                                         }}>
-                                        <Icon name="delete" size={20} color="#000" />
+                                        <Icon name="delete" size={20} color={colors.danger} />
                                         </TouchableOpacity>
                                     </View>
                                 </TouchableOpacity>
@@ -158,14 +163,13 @@ const DeleteScreen = ({ navigation }) => {
                         keyExtractor={item => item.Id}
                         />
                         
-        </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#eee",
         padding: 10,
     },
     listItem: {
@@ -174,8 +178,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         padding: 10,
         margin: 5,
-        backgroundColor: "#fff",
         borderRadius: 5,
+        borderWidth: 1,
     },
     listName: {
         fontSize: 20,
@@ -183,6 +187,7 @@ const styles = StyleSheet.create({
     buttons: {
         flexDirection: "row",
         justifyContent: "space-between",
+        gap: 15,
     },
 });
 

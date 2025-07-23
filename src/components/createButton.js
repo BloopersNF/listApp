@@ -5,9 +5,10 @@ import Icon from "react-native-vector-icons/AntDesign";
 const { width, height } = Dimensions.get('window');
 
 const CreateButton = ({method}) => {
-    const buttonSize = Math.min(width, height) * 0.175; // 15% da menor dimensão
+    const buttonSize = Math.min(width, height) * 0.175; // 17.5% da menor dimensão
     const iconSize = buttonSize * 0.45; // 45% do tamanho do botão
-    const margin = width * 0.07; // 5% da largura da tela
+    const margin = width * 0.07; // 7% da largura da tela
+    const bottomMargin = height * 0.15; // 15% da altura para ficar acima da tab bar
     
     return(
         <TouchableOpacity 
@@ -16,7 +17,7 @@ const CreateButton = ({method}) => {
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: buttonSize / 2,
-                bottom: margin,
+                bottom: bottomMargin,
                 right: margin,
             }]}
         >
