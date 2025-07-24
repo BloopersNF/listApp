@@ -1,7 +1,8 @@
 import React from "react";
-import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView, Modal} from "react-native";
+import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView, Modal, StatusBar} from "react-native";
 import List from "../components/List";
 import { useState, useEffect, useRef } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import Item from "../components/Item";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -11,11 +12,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { currencyToCents, centsToCurrency, addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
 
 
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
-
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-    requestNonPersonalizedAdsOnly: true,
-});
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-9404218606533420/8045621436';
 
 const storeData = async (key, value) => {
     try {
@@ -59,7 +56,6 @@ const ListScreen = ({route}) =>
     const [quantity, setQuantity] = useState("");
     const [totalPrice, setTotalPrice] = useState(0);
     const [checkList, setCheckList] = useState([]);
-    const [loaded, setLoaded] = useState(false);
     const [sortModalVisible, setSortModalVisible] = useState(false);
     const [sortBy, setSortBy] = useState('addition'); // 'addition', 'alphabetical', 'status'
 
@@ -104,40 +100,53 @@ const ListScreen = ({route}) =>
         }
     };
 
-    useEffect(() => {
-        const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-        setLoaded(true);
-        });
-
-        const unsubscribeOpened = interstitial.addAdEventListener(AdEventType.OPENED, () => {
-        if (Platform.OS === 'ios') {
-            // Prevent the close button from being unreachable by hiding the status bar on iOS
-            StatusBar.setHidden(true);
+    const checkAndIncrementVisitCount = async () => {
+        try {
+            const visitCountStr = await AsyncStorage.getItem('listScreenVisitCount');
+            const visitCount = visitCountStr ? parseInt(visitCountStr) : 0;
+            const newVisitCount = visitCount + 1;
+            
+            console.log('List screen visit count:', newVisitCount);
+            
+            // Se atingiu 5 visitas, mostrar anúncio e resetar contador
+            if (newVisitCount >= 5) {
+                await AsyncStorage.setItem('listScreenVisitCount', '0');
+                console.log('5 visits reached, showing ad and resetting counter');
+                
+                // Carregar e mostrar anúncio
+                const adInstance = InterstitialAd.createForAdRequest(adUnitId, {
+                    requestNonPersonalizedAdsOnly: true,
+                });
+                
+                adInstance.addAdEventListener('loaded', () => {
+                    adInstance.show();
+                });
+                
+                adInstance.load();
+            } else {
+                await AsyncStorage.setItem('listScreenVisitCount', newVisitCount.toString());
+            }
+        } catch (error) {
+            console.log('Error managing visit count:', error);
         }
-        });
+    };
 
-        const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-        if (Platform.OS === 'ios') {
-            StatusBar.setHidden(false);
+    // Função para resetar contador (útil para testes)
+    const resetVisitCount = async () => {
+        try {
+            await AsyncStorage.removeItem('listScreenVisitCount');
+            console.log('Visit count reset');
+        } catch (error) {
+            console.log('Error resetting visit count:', error);
         }
-        });
+    };
 
-        // Start loading the interstitial straight away
-        interstitial.load();
-
-        // Unsubscribe from events on unmount
-        return () => {
-        unsubscribeLoaded();
-        unsubscribeOpened();
-        unsubscribeClosed();
-        };
-    }, [loaded]);
-
-    useEffect(() => {
-        if (loaded) {
-            interstitial.show();
-        }
-    }, [loaded]);
+    // Carregar anúncio sempre que a tela receber foco e incrementar contador
+    useFocusEffect(
+        React.useCallback(() => {
+            checkAndIncrementVisitCount();
+        }, [])
+    );
 
 
 

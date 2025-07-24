@@ -19,7 +19,7 @@ const getData = async (key) => {
         return jsonValue != null ? JSON.parse(jsonValue) : null;
     }
     catch(e) {
-        console.log(e);
+        console.log("erro no get data:", e);
     }
 }
 
@@ -62,7 +62,22 @@ const cleanCorruptedData = async () => {
         const allKeys = await AsyncStorage.getAllKeys();
         const keysToRemove = [];
         
+        // Keys que são configurações do usuário e não devem ser deletadas
+        const userConfigKeys = [
+            'isDarkMode', 
+            'selectedLanguage', 
+            'listScreenVisitCount',
+            'listSortPreference',
+            'userPreferences',
+            'appSettings'
+        ];
+        
         for (const key of allKeys) {
+            // Pular keys de configuração do usuário
+            if (userConfigKeys.includes(key)) {
+                continue;
+            }
+            
             if (!key || key.trim() === '') {
                 keysToRemove.push(key);
                 continue;
@@ -106,8 +121,22 @@ const HomeScreen = ({ navigation }) => {
     getAllKeys = async () => {
         try {
             const all = await AsyncStorage.getAllKeys();
-            setKeys(all);
-            return all;
+            
+            // Keys que são configurações do usuário e não devem aparecer na lista
+            const userConfigKeys = [
+                'isDarkMode', 
+                'selectedLanguage', 
+                'listScreenVisitCount',
+                'listSortPreference',
+                'userPreferences',
+                'appSettings'
+            ];
+            
+            // Filtrar apenas keys que são listas (não são configurações)
+            const listKeys = all.filter(key => !userConfigKeys.includes(key));
+            
+            setKeys(listKeys);
+            return listKeys;
         } catch(e) {
             console.log(e);
             return [];
@@ -127,7 +156,16 @@ const HomeScreen = ({ navigation }) => {
                     .filter(key => key && key.trim() !== '') // Filtra chaves válidas
                     .map(async (key) => {
                         try {
-                            return await getData(key);
+                            const data = await getData(key);
+                            // Verificar se é realmente uma lista válida
+                            if (data && 
+                                data.Name && 
+                                data.Id && 
+                                typeof data.Name === 'string' &&
+                                data.Name.trim() !== '') {
+                                return data;
+                            }
+                            return null;
                         } catch (error) {
                             console.log('Error fetching data for key:', key, error);
                             return null;
@@ -140,7 +178,8 @@ const HomeScreen = ({ navigation }) => {
                 list !== undefined && 
                 list.Name && 
                 list.Name.trim() !== '' &&
-                list.Id
+                list.Id &&
+                !list.Deleted // Não mostrar listas deletadas
             );
             
             setLists(filteredLists);
