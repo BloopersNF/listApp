@@ -270,34 +270,39 @@ const HomeScreen = ({ navigation }) => {
                             style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]} 
                             onPress={() => navigation.navigate('List', {name: list.Name, id: list.Id})}
                         >
-                            <View>
-                                <View style={{flexDirection: "row", width:"100%", justifyContent: "space-between", alignItems:"center"}}>
-                                    <Text style={{ color: colors.text }} numberOfLines={1}>{list.Name}</Text>
-                                    <TouchableOpacity onPress={async () => {
-                                        try {
-                                            const deletedList = {...list};
-                                            deletedList.Deleted = true;
-                                            deletedList.DeletedAt = new Date().toISOString();
-                                            await storeData(deletedList.Id, deletedList);
-                                            await fetchLists();
-                                        } catch (error) {
-                                            console.log('Error deleting list:', error);
-                                        }
-                                    }}>
-                                        <Icon name="delete" size={24} color="#e22"/>
+                            <View style={styles.listContent}>
+                                <View style={styles.listHeader}>
+                                    <Text style={[styles.listTitle, { color: colors.text }]} numberOfLines={1}>
+                                        {list.Name}
+                                    </Text>
+                                    <TouchableOpacity 
+                                        style={styles.deleteButton}
+                                        onPress={async () => {
+                                            try {
+                                                const deletedList = {...list};
+                                                deletedList.Deleted = true;
+                                                deletedList.DeletedAt = new Date().toISOString();
+                                                await storeData(deletedList.Id, deletedList);
+                                                await fetchLists();
+                                            } catch (error) {
+                                                console.log('Error deleting list:', error);
+                                            }
+                                        }}
+                                    >
+                                        <Icon name="delete" size={20} color="#e22"/>
                                     </TouchableOpacity>
                                 </View>
-                            </View>
-                            <View style={{flexDirection:"row", justifyContent:"space-between", marginTop:15}}>
-                                <Text style={{fontSize:10, color: colors.textTertiary}}>
-                                    {list.Items?.length || 0} {getText('items')}
-                                </Text>
-                                <Text style={{fontSize:10, color: colors.textTertiary}}>
-                                    {list.Date || ''}
-                                </Text>
-                                <Text style={{color:"#2b2", fontSize:10, fontWeight:"bold"}}>
-                                    {formatCurrency(list.TotalPrice || 0)}
-                                </Text>
+                                <View style={styles.listFooter}>
+                                    <Text style={[styles.listInfo, { color: colors.textTertiary }]}>
+                                        {list.Items?.length || 0} {getText('items')}
+                                    </Text>
+                                    <Text style={[styles.listDate, { color: colors.textTertiary }]}>
+                                        {list.Date || ''}
+                                    </Text>
+                                    <Text style={[styles.listPrice, { color: "#2b2" }]}>
+                                        {formatCurrency(list.TotalPrice || 0)}
+                                    </Text>
+                                </View>
                             </View>
                         </TouchableOpacity>
                     )
@@ -377,12 +382,59 @@ const styles = StyleSheet.create({
         borderRadius: 15,
     },
     listItem: {
-        padding: 20,
+        padding: 16,
         borderWidth: 1,
-        margin: 5,
-        borderRadius: 10,
+        margin: 8,
+        borderRadius: 12,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    listContent: {
+        flex: 1,
+    },
+    listHeader: {
+        flexDirection: "row",
+        alignItems: "center",
         justifyContent: "space-between",
-    }
+        marginBottom: 12,
+    },
+    listTitle: {
+        fontSize: 16,
+        fontWeight: "600",
+        flex: 1,
+        marginRight: 12,
+    },
+    deleteButton: {
+        padding: 4,
+        borderRadius: 4,
+        justifyContent: "center",
+        alignItems: "center",
+        minWidth: 28,
+        minHeight: 28,
+    },
+    listFooter: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    listInfo: {
+        fontSize: 12,
+        fontWeight: "500",
+    },
+    listDate: {
+        fontSize: 12,
+        fontWeight: "400",
+    },
+    listPrice: {
+        fontSize: 12,
+        fontWeight: "bold",
+    },
 });
 
 export default HomeScreen;
