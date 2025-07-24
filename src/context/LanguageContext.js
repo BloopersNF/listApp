@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { NativeModules, Platform } from 'react-native';
-import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import lang from '../langs/lang';
+
+// Tentativa de importar expo-localization com fallback
+let Localization;
+try {
+    Localization = require('expo-localization');
+} catch (error) {
+    console.log('expo-localization not available, using fallback');
+    Localization = null;
+}
 
 const LanguageContext = createContext();
 
@@ -19,7 +27,7 @@ const getDeviceLanguage = () => {
 
     try {
         // Try using Expo Localization first (more reliable)
-        if (Localization.locale) {
+        if (Localization && Localization.locale) {
             deviceLanguage = Localization.locale;
         } else if (Platform.OS === 'ios') {
             deviceLanguage = NativeModules.SettingsManager?.settings?.AppleLocale ||

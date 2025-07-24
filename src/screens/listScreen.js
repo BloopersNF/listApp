@@ -1,5 +1,5 @@
 import React from "react";
-import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView} from "react-native";
+import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView, Modal} from "react-native";
 import List from "../components/List";
 import { useState, useEffect, useRef } from "react";
 import Item from "../components/Item";
@@ -60,6 +60,8 @@ const ListScreen = ({route}) =>
     const [totalPrice, setTotalPrice] = useState(0);
     const [checkList, setCheckList] = useState([]);
     const [loaded, setLoaded] = useState(false);
+    const [sortModalVisible, setSortModalVisible] = useState(false);
+    const [sortBy, setSortBy] = useState('addition'); // 'addition', 'alphabetical', 'status'
 
     //percorrer a lista atual para verificar os items que estão com o check true
     const checkItems = () => {
@@ -78,7 +80,29 @@ const ListScreen = ({route}) =>
                 setList(data);
             }
         });
+        
+        // Carregar preferência de ordenação
+        loadSortPreference();
     }, []);
+
+    const loadSortPreference = async () => {
+        try {
+            const savedSort = await AsyncStorage.getItem('listSortPreference');
+            if (savedSort) {
+                setSortBy(savedSort);
+            }
+        } catch (error) {
+            console.log('Error loading sort preference:', error);
+        }
+    };
+
+    const saveSortPreference = async (newSortBy) => {
+        try {
+            await AsyncStorage.setItem('listSortPreference', newSortBy);
+        } catch (error) {
+            console.log('Error saving sort preference:', error);
+        }
+    };
 
     useEffect(() => {
         const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
@@ -152,6 +176,43 @@ const ListScreen = ({route}) =>
         flatList.current?.scrollToEnd();
     }
 
+    // Função para ordenar itens
+    const getSortedItems = () => {
+        if (!list?.Items) return [];
+        
+        const items = [...list.Items];
+        
+        // Separar itens marcados e não marcados
+        const checkedItems = items.filter(item => item.checked);
+        const uncheckedItems = items.filter(item => !item.checked);
+        
+        // Aplicar ordenação dentro de cada grupo
+        const sortItems = (itemsToSort) => {
+            switch(sortBy) {
+                case 'alphabetical':
+                    return itemsToSort.sort((a, b) => a.name.localeCompare(b.name));
+                case 'status':
+                    return itemsToSort; // Já separados por status
+                default: // 'addition'
+                    return itemsToSort;
+            }
+        };
+        
+        if (sortBy === 'status') {
+            // Mostrar não marcados primeiro, depois marcados embaixo
+            return [...sortItems(uncheckedItems), ...sortItems(checkedItems)];
+        } else {
+            // Misturar todos e aplicar ordenação
+            return sortItems(items);
+        }
+    };
+
+    const handleSortChange = (newSortBy) => {
+        setSortBy(newSortBy);
+        saveSortPreference(newSortBy);
+        setSortModalVisible(false);
+    };
+
     const removeItem = async (index) => {
         const newList = {...list}; 
         const itemToRemove = newList.Items[index];
@@ -209,34 +270,82 @@ return (
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
         <SafeAreaView style={{flex:1, backgroundColor: colors.background}} >
+            {/* Header com botão de ordenação */}
+            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                <TouchableOpacity 
+                    style={[styles.sortButton, { backgroundColor: colors.primary }]}
+                    onPress={() => setSortModalVisible(true)}
+                >
+                    <Icon name="filter" size={20} color="#fff" />
+                    <Text style={styles.sortButtonText}>{getText('sortBy')}</Text>
+                </TouchableOpacity>
+            </View>
+
             <FlatList
                 ref ={flatList}
                 initialNumToRender={14}
                 keyboardDismissMode="on-drag"
-                data={list?.Items || []}
-                keyExtractor={(item, index) => index.toString()}
+                data={getSortedItems()}
+                keyExtractor={(item, index) => `${item.name}-${index}`}
                 contentContainerStyle={{paddingBottom: 80}}
                 renderItem={({ item, index }) => (
-                    <View style={{flexDirection: "row", alignItems:"center", justifyContent:"center" }}>
-                        <TouchableOpacity style={{margin:5}} onPress={() => priceCheckItem(index)}>
+                    <View style={styles.itemContainer}>
+                        <TouchableOpacity style={styles.checkButtonContainer} onPress={() => {
+                            const originalIndex = list.Items.findIndex(listItem => listItem === item);
+                            priceCheckItem(originalIndex);
+                        }}>
                             {item.checked ?
                             <Icon name="checkcircle" size={30} color="#4151E1"></Icon>:
                             <View style={[styles.checkCircle, { borderColor: colors.border }]}></View>}
                         </TouchableOpacity>
 
-                        <View key={index} style={[styles.itemBox, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
-                            <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>{item.name}</Text>
+                        <View style={[styles.itemBox, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+                            <View style={styles.itemNameContainer}>
+                                <Text 
+                                    numberOfLines={2} 
+                                    ellipsizeMode="tail" 
+                                    style={[
+                                        styles.itemName, 
+                                        { color: colors.text },
+                                        item.checked && styles.checkedText
+                                    ]}
+                                >
+                                    {item.name}
+                                </Text>
                             </View>
-                            <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>
+                            <View style={styles.itemPriceContainer}>
+                                <Text 
+                                    numberOfLines={1} 
+                                    ellipsizeMode="tail" 
+                                    style={[
+                                        styles.itemPriceText, 
+                                        { color: colors.text },
+                                        item.checked && styles.checkedText
+                                    ]}
+                                >
                                     {formatCurrency(item.priceCents)}
                                 </Text>
                             </View>
-                            <View style={styles.description}>
-                                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text }}>{item.quantity}</Text>
+                            <View style={styles.itemQuantityContainer}>
+                                <Text 
+                                    numberOfLines={1} 
+                                    ellipsizeMode="tail" 
+                                    style={[
+                                        styles.itemQuantityText, 
+                                        { color: colors.text },
+                                        item.checked && styles.checkedText
+                                    ]}
+                                >
+                                    {item.quantity}x
+                                </Text>
                             </View>
-                            <TouchableOpacity onPress={() => removeItem(index)}>
+                            <TouchableOpacity 
+                                style={styles.deleteButton}
+                                onPress={() => {
+                                    const originalIndex = list.Items.findIndex(listItem => listItem === item);
+                                    removeItem(originalIndex);
+                                }}
+                            >
                                 <Icon name="delete" size={20} color="#f00"/>
                             </TouchableOpacity>
                         </View>
@@ -297,15 +406,90 @@ return (
                     </TouchableOpacity>
                 </View>
             </View>
+            
+            {/* Modal de ordenação */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={sortModalVisible}
+                onRequestClose={() => setSortModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>{getText('sortBy')}</Text>
+                        
+                        <TouchableOpacity 
+                            style={[styles.sortOption, sortBy === 'addition' && { backgroundColor: colors.primary + '20' }]}
+                            onPress={() => handleSortChange('addition')}
+                        >
+                            <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAddition')}</Text>
+                            {sortBy === 'addition' && <Icon name="check" size={20} color={colors.primary} />}
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.sortOption, sortBy === 'alphabetical' && { backgroundColor: colors.primary + '20' }]}
+                            onPress={() => handleSortChange('alphabetical')}
+                        >
+                            <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAlphabetical')}</Text>
+                            {sortBy === 'alphabetical' && <Icon name="check" size={20} color={colors.primary} />}
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.sortOption, sortBy === 'status' && { backgroundColor: colors.primary + '20' }]}
+                            onPress={() => handleSortChange('status')}
+                        >
+                            <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByStatus')}</Text>
+                            {sortBy === 'status' && <Icon name="check" size={20} color={colors.primary} />}
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.closeModalButton, { backgroundColor: colors.textTertiary }]}
+                            onPress={() => setSortModalVisible(false)}
+                        >
+                            <Text style={styles.closeModalButtonText}>{getText('close')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     </KeyboardAvoidingView>
 );
 }
-styles = StyleSheet.create({
+const styles = StyleSheet.create({
+    header: {
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        alignItems: 'flex-end',
+    },
+    sortButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    sortButtonText: {
+        color: '#fff',
+        marginLeft: 8,
+        fontSize: 14,
+        fontWeight: '600',
+    },
     inputContainer: {
         paddingVertical: 10,
         paddingHorizontal: 5,
         borderTopWidth: 1,
+    },
+    itemContainer: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+    checkButtonContainer: {
+        padding: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     checkCircle: {
         width: 30,
@@ -316,14 +500,75 @@ styles = StyleSheet.create({
         justifyContent: "center",
     },
     itemBox: {
-        flex:1,
+        flex: 1,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 10,
-        margin: 5,
+        padding: 12,
+        marginLeft: 5,
         borderWidth: 1,
-        borderRadius: 20,
+        borderRadius: 15,
+        minHeight: 60,
+    },
+    itemContent: {
+        flex: 1,
+        marginRight: 10,
+    },
+    itemNameContainer: {
+        flex: 1,
+        marginRight: 10,
+    },
+    itemName: {
+        fontSize: 16,
+        fontWeight: '500',
+        lineHeight: 20,
+    },
+    itemPriceContainer: {
+        alignItems: 'flex-end',
+        marginRight: 10,
+    },
+    itemPriceText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#2b2',
+    },
+    itemQuantityContainer: {
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    itemQuantityText: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    itemDetailsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    priceContainer: {
+        flex: 1,
+    },
+    itemPrice: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#2b2',
+    },
+    quantityContainer: {
+        marginLeft: 10,
+    },
+    itemQuantity: {
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    checkedText: {
+        textDecorationLine: 'line-through',
+        fontStyle: 'italic',
+        opacity: 0.7,
+    },
+    deleteButton: {
+        padding: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     itemInput: {
         width: "45%",
@@ -348,10 +593,53 @@ styles = StyleSheet.create({
         borderRadius: 20,
         textAlign: "center",
     },
-    description: {
-        width: "25%",
-        padding: 0,
-    }
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        borderRadius: 20,
+        padding: 25,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 5,
+        minWidth: 280,
+        maxWidth: 320,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    sortOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        padding: 15,
+        marginVertical: 5,
+        borderRadius: 10,
+    },
+    sortOptionText: {
+        fontSize: 16,
+        flex: 1,
+    },
+    closeModalButton: {
+        marginTop: 20,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 25,
+    },
+    closeModalButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 })
 
 export default ListScreen;

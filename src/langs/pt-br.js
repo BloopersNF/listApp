@@ -55,7 +55,14 @@ const pt = {
     
     // ConfigScreen
     emailNotAvailable: "Email não disponível",
-    contactEmailMessage: "Entre em contato conosco em: {0}"
+    contactEmailMessage: "Entre em contato conosco em: {0}",
+    
+    // Sorting options
+    sortBy: "Ordenar por",
+    sortByAddition: "Ordem de adição",
+    sortByAlphabetical: "Ordem alfabética",
+    sortByStatus: "Por status (marcados embaixo)",
+    close: "Fechar"
 };
 
 export default pt;

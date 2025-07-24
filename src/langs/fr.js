@@ -55,7 +55,14 @@ const fr = {
     
     // ConfigScreen
     emailNotAvailable: "Email non disponible",
-    contactEmailMessage: "Veuillez nous contacter à: {0}"
+    contactEmailMessage: "Veuillez nous contacter à: {0}",
+    
+    // Sorting options
+    sortBy: "Trier par",
+    sortByAddition: "Ordre d'ajout",
+    sortByAlphabetical: "Ordre alphabétique",
+    sortByStatus: "Par statut (cochés en bas)",
+    close: "Fermer"
 };
 
 export default fr;

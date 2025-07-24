@@ -55,7 +55,14 @@ const cn = {
     
     // ConfigScreen
     emailNotAvailable: "邮箱不可用",
-    contactEmailMessage: "请联系我们：{0}"
+    contactEmailMessage: "请联系我们：{0}",
+    
+    // Sorting options
+    sortBy: "排序方式",
+    sortByAddition: "添加顺序",
+    sortByAlphabetical: "字母顺序",
+    sortByStatus: "按状态（已选在底部）",
+    close: "关闭"
 };
 
 export default cn;
