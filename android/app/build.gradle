@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.listApp'
+    namespace 'com.marketlist.app'
     defaultConfig {
-        applicationId 'com.anonymous.listApp'
+        applicationId 'com.marketlist.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

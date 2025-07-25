@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
-const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-9404218606533420/1033173712';
+const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-9404218606533420/2553683512';
 
 const AdBanner = () => {
   return (

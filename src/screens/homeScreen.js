@@ -7,9 +7,12 @@ import List from "../components/List";
 import { useFocusEffect } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import InterstitialAdManager from "../components/InterstitialAdManager";
+import AdBanner from "../components/AdBanner";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { formatCurrency } from "../utils/currency";
+
+
 
 
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1284" height="2778" viewBox="0 0 1284 2778" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1284" height="2778" fill="#4A90E2"/>
+  
+  <!-- Main icon/logo area -->
+  <circle cx="642" cy="1200" r="120" fill="#FFFFFF" fill-opacity="0.9"/>
+  
+  <!-- List icon -->
+  <rect x="582" y="1160" width="120" height="8" rx="4" fill="#4A90E2"/>
+  <rect x="582" y="1180" width="80" height="8" rx="4" fill="#4A90E2"/>
+  <rect x="582" y="1200" width="100" height="8" rx="4" fill="#4A90E2"/>
+  <rect x="582" y="1220" width="90" height="8" rx="4" fill="#4A90E2"/>
+  
+  <!-- Checkmarks -->
+  <path d="M565 1165L570 1170L580 1160" stroke="#4A90E2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M565 1185L570 1190L580 1180" stroke="#4A90E2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M565 1205L570 1210L580 1200" stroke="#4A90E2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- App name -->
+  <text x="642" y="1450" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#FFFFFF">ListApp</text>
+  
+  <!-- Subtitle -->
+  <text x="642" y="1500" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#FFFFFF" opacity="0.8">Organize suas listas</text>
+  
+  <!-- Loading indicator -->
+  <circle cx="642" cy="1600" r="20" fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.3"/>
+  <circle cx="642" cy="1600" r="20" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-dasharray="31.4 31.4" stroke-linecap="round">
+    <animateTransform attributeName="transform" type="rotate" values="0 642 1600;360 642 1600" dur="1s" repeatCount="indefinite"/>
+  </circle>
+</svg>
