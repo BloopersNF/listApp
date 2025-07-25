@@ -10,7 +10,7 @@ const cn = {
     contactUs: "联系我们",
     comingSoon: "即将推出",
     version: "1.0.0",
-    contactEmail: "support@listapp.com",
+    contactEmail: "marolinaana@gmail.com",
     
     // HomeScreen
     listNamePlaceholder: "列表名称",

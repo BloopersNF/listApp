@@ -11,7 +11,7 @@ const en = {
     contactUs: "Contact Us",
     comingSoon: "Coming Soon",
     version: "1.0.0",
-    contactEmail: "support@listapp.com",
+    contactEmail: "marolinaana@gmail.com",
     
     // HomeScreen
     listNamePlaceholder: "List Name",

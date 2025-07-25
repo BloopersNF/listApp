@@ -10,7 +10,7 @@ const pt = {
     contactUs: "Fale Conosco",
     comingSoon: "Em Breve",
     version: "1.0.0",
-    contactEmail: "suporte@listapp.com",
+    contactEmail: "marolinaana@gmail.com",
     
     // HomeScreen
     listNamePlaceholder: "Nome da Lista",
