@@ -12,7 +12,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { currencyToCents, centsToCurrency, addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
 
 
-const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-9404218606533420/8045621436';
+const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-9404218606533420/6418289792';
 
 const storeData = async (key, value) => {
     try {
