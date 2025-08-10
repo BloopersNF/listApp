@@ -7,6 +7,7 @@ import Item from "../components/Item";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { TestIds, InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
+import AdBanner from "../components/AdBanner";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { currencyToCents, centsToCurrency, addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
@@ -101,6 +102,8 @@ const ListScreen = ({route}) =>
     };
 
     const checkAndIncrementVisitCount = async () => {
+        // Função desabilitada temporariamente para corrigir crashes
+        /*
         try {
             const visitCountStr = await AsyncStorage.getItem('listScreenVisitCount');
             const visitCount = visitCountStr ? parseInt(visitCountStr) : 0;
@@ -113,22 +116,32 @@ const ListScreen = ({route}) =>
                 await AsyncStorage.setItem('listScreenVisitCount', '0');
                 console.log('5 visits reached, showing ad and resetting counter');
                 
-                // Carregar e mostrar anúncio
-                const adInstance = InterstitialAd.createForAdRequest(adUnitId, {
-                    requestNonPersonalizedAdsOnly: true,
-                });
-                
-                adInstance.addAdEventListener('loaded', () => {
-                    adInstance.show();
-                });
-                
-                adInstance.load();
+                // Verificar se AdMob está habilitado antes de carregar anúncio
+                if (global.AdMobEnabled) {
+                    try {
+                        // Carregar e mostrar anúncio
+                        const adInstance = InterstitialAd.createForAdRequest(adUnitId, {
+                            requestNonPersonalizedAdsOnly: true,
+                        });
+                        
+                        adInstance.addAdEventListener('loaded', () => {
+                            adInstance.show();
+                        });
+                        
+                        adInstance.load();
+                    } catch (adError) {
+                        console.warn('Erro ao carregar anúncio intersticial:', adError);
+                    }
+                } else {
+                    console.log('AdMob desabilitado, pulando anúncio intersticial');
+                }
             } else {
                 await AsyncStorage.setItem('listScreenVisitCount', newVisitCount.toString());
             }
         } catch (error) {
             console.log('Error managing visit count:', error);
         }
+        */
     };
 
     // Função para resetar contador (útil para testes)
@@ -460,6 +473,7 @@ return (
                     </View>
                 </View>
             </Modal>
+            <AdBanner />
         </SafeAreaView>
     </KeyboardAvoidingView>
 );

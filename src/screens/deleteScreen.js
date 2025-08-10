@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {Text, StyleSheet, View, TouchableOpacity, FlatList, Alert, SafeAreaView } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity, FlatList, Alert, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useFocusEffect } from '@react-navigation/native';
@@ -19,12 +19,36 @@ const DeleteScreen = ({ navigation }) => {
             const all = await AsyncStorage.getAllKeys();
             setKeys(all);
             return all;
-        } catch(e) {
+        } catch (e) {
             console.log(e);
             return [];
         }
     }
-    
+
+    // Remove listas deletadas há mais de 7 dias
+    const removeExpiredDeletedLists = async () => {
+        try {
+            const allKeys = await AsyncStorage.getAllKeys();
+            for (let i = 0; i < allKeys.length; i++) {
+                let list = await AsyncStorage.getItem(allKeys[i]);
+                if (list != null) {
+                    list = JSON.parse(list);
+                    if (list.DeletedAt && list.Deleted) {
+                        const deletedAt = new Date(list.DeletedAt);
+                        const now = new Date();
+                        const diffTime = Math.abs(now - deletedAt);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays >= 7) {
+                            await AsyncStorage.removeItem(list.Id);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     // Busca todas as listas deletadas a partir das chaves
     const getDeletedLists = async (allKeys) => {
         let lists = [];
@@ -33,28 +57,20 @@ const DeleteScreen = ({ navigation }) => {
                 let list = await AsyncStorage.getItem(allKeys[i]);
                 if (list != null) {
                     list = JSON.parse(list);
-                    if (list.DeletedAt) {
-                        const deletedAt = new Date(list.DeletedAt);
-                        const now = new Date();
-                        const diffTime = Math.abs(now - deletedAt);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (diffDays >= 7 && (list.Deleted == true)) { // Deleta após 7 dias
-                            await deleteList(list.Id);
-                        }
-                    }
                     if (list.Deleted) {
-                        lists.push({...list});
+                        lists.push({ ...list });
                     }
                 }
             }
-        } catch(e) {
+        } catch (e) {
             console.log(e);
         }
-        return lists; 
+        return lists;
     }
 
     // Atualiza os estados de chaves e listas deletadas
     const fetchAndUpdateLists = async () => {
+        await removeExpiredDeletedLists();
         const allKeys = await getAllKeys();
         const lists = await getDeletedLists(allKeys);
         setKeys(allKeys);
@@ -69,7 +85,7 @@ const DeleteScreen = ({ navigation }) => {
             const newKeys = await AsyncStorage.getAllKeys();
             setKeys(newKeys);
             await fetchAndUpdateLists();
-        } catch(e) {
+        } catch (e) {
             console.log(e);
         }
     }
@@ -82,7 +98,7 @@ const DeleteScreen = ({ navigation }) => {
             list.Deleted = false;
             await AsyncStorage.setItem(key, JSON.stringify(list));
             fetchAndUpdateLists();
-        } catch(e) {
+        } catch (e) {
             console.log(e);
         }
     }
@@ -101,7 +117,7 @@ const DeleteScreen = ({ navigation }) => {
                 }
             }
             await fetchAndUpdateLists();
-        } catch(e) {
+        } catch (e) {
             console.log(e);
         }
     }
@@ -133,7 +149,7 @@ const DeleteScreen = ({ navigation }) => {
                         <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
                             {deletedLists.length} {deletedLists.length === 1 ? getText('listInTrash') : getText('listsInTrash')}
                         </Text>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.clearAllButton, { backgroundColor: colors.danger }]}
                             onPress={() => {
                                 Alert.alert(
@@ -150,7 +166,7 @@ const DeleteScreen = ({ navigation }) => {
                             <Text style={styles.clearAllText}>{getText('clearAll')}</Text>
                         </TouchableOpacity>
                     </View>
-                    
+
                     <FlatList
                         data={deletedLists}
                         showsVerticalScrollIndicator={false}
@@ -158,7 +174,7 @@ const DeleteScreen = ({ navigation }) => {
                         renderItem={({ item, index }) => {
                             if (item.Deleted) {
                                 const deletedDate = item.DeletedAt ? new Date(item.DeletedAt).toLocaleDateString('pt-BR') : '';
-                                return(
+                                return (
                                     <View style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
                                         <View style={styles.listContent}>
                                             <View style={styles.listInfo}>
@@ -169,17 +185,17 @@ const DeleteScreen = ({ navigation }) => {
                                                     {item.Items?.length || 0} {getText('items')} • {getText('deletedOn')} {deletedDate}
                                                 </Text>
                                             </View>
-                                            
+
                                             <View style={styles.actions}>
-                                                <TouchableOpacity 
+                                                <TouchableOpacity
                                                     style={[styles.actionButton, styles.restoreButton, { backgroundColor: colors.primary }]}
                                                     onPress={() => restoreList(item.Id)}
                                                 >
                                                     <Icon name="reload1" size={18} color="#fff" />
                                                     <Text style={styles.actionText}>{getText('restore')}</Text>
                                                 </TouchableOpacity>
-                                                
-                                                <TouchableOpacity 
+
+                                                <TouchableOpacity
                                                     style={[styles.actionButton, styles.deleteButton, { backgroundColor: colors.danger }]}
                                                     onPress={() => {
                                                         Alert.alert(

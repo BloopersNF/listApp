@@ -14,6 +14,9 @@ import 'expo-dev-client';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+// Global flag para controlar se AdMob está disponível
+global.AdMobEnabled = false;
+
 const firebaseConfig = {
   apiKey: "AIzaSyAOflUm0k7St1uYqMZo9ldmOpJJLGOr7b0",
   authDomain: "listapp-ce96d.firebaseapp.com",
@@ -33,9 +36,25 @@ const App = () => {
   useEffect(() => {
     async function prepare() {
       try {
-        // Inicializar o Google Mobile Ads SDK
-        await mobileAds().initialize();
-        console.log('AdMob initialized');
+        // Inicializar o Google Mobile Ads SDK com detecção de incompatibilidade
+        try {
+          console.log('Tentando inicializar AdMob...');
+          
+          // Timeout de 3 segundos para detectar problemas de inicialização
+          const initPromise = mobileAds().initialize();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('AdMob initialization timeout')), 3000)
+          );
+
+          await Promise.race([initPromise, timeoutPromise]);
+          
+          global.AdMobEnabled = true;
+          console.log('✅ AdMob inicializado com sucesso');
+        } catch (admobError) {
+          console.warn('⚠️ AdMob falhou ao inicializar - provável incompatibilidade com New Architecture:', admobError.message);
+          global.AdMobEnabled = false;
+          // Continuar sem AdMob se falhar
+        }
         
         // Pre-load fonts, make any API calls you need to do here
         // Simulate app loading time

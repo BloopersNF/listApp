@@ -9,23 +9,15 @@
             "useFrameworks": "static"
           }
         }
-      ],
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-9404218606533420~5307626712",
-          "iosAppId": "ca-app-pub-9404218606533420~5307626712"
-        }
-      ],
-      "expo-localization"
+      ]
     ],
     "slug": "listApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Icon.png",
+    "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
       "resizeMode": "contain",
       "backgroundColor": "#4A90E2"
     },
@@ -39,16 +31,7 @@
     },
     "android": {
       "package": "com.marketlist.app",
-      "splash": {
-        "image": "./assets/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#4A90E2",
-        "mdpi": "./assets/splash.png",
-        "hdpi": "./assets/splash.png",
-        "xhdpi": "./assets/splash.png",
-        "xxhdpi": "./assets/splash.png",
-        "xxxhdpi": "./assets/splash.png"
-      }
+      "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -5,6 +5,12 @@ import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads'
 const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-9404218606533420/2553683512';
 
 const AdBanner = () => {
+  // Verificar se AdMob está habilitado globalmente
+  if (!global.AdMobEnabled) {
+    console.log('AdBanner: AdMob desabilitado, não mostrando banner');
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <BannerAd
