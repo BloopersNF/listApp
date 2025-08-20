@@ -7,12 +7,18 @@
         {
           "ios": {
             "useFrameworks": "static"
+          },
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "minSdkVersion": 24
           }
         }
       ]
     ],
     "slug": "listApp",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png",
     "userInterfaceStyle": "light",
@@ -31,7 +37,10 @@
     },
     "android": {
       "package": "com.marketlist.app",
-      "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png"
+      "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png",
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
+      "minSdkVersion": 24
     },
     "web": {
       "favicon": "./assets/favicon.png"

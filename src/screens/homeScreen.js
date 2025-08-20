@@ -348,10 +348,6 @@ const HomeScreen = ({ navigation }) => {
                     </View>
                 </KeyboardAvoidingView>
             </Modal>
-            <View>
-                <InterstitialAdManager />
-                <AdBanner />
-            </View>
         </SafeAreaView>
     )
 }

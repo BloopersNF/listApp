@@ -28,8 +28,8 @@ const CustomSplashScreen = () => {
     <View style={[styles.container, { backgroundColor: '#4A90E2' }]}>
       {/* Logo/Icon Area */}
       <View style={styles.logoContainer}>
-        <Image 
-          source={require('../../assets/Icon.png')} 
+        <Image
+          source={require('../../assets/res/mipmap-xxxhdpi/ic_launcher.png')}
           style={styles.appIcon}
           resizeMode="contain"
         />
