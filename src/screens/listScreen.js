@@ -101,20 +101,18 @@ const ListScreen = ({ route }) => {
     };
 
     const checkAndIncrementVisitCount = async () => {
-        // Função desabilitada temporariamente para corrigir crashes
-        /*
         try {
             const visitCountStr = await AsyncStorage.getItem('listScreenVisitCount');
             const visitCount = visitCountStr ? parseInt(visitCountStr) : 0;
             const newVisitCount = visitCount + 1;
-            
+
             console.log('List screen visit count:', newVisitCount);
-            
+
             // Se atingiu 5 visitas, mostrar anúncio e resetar contador
             if (newVisitCount >= 5) {
                 await AsyncStorage.setItem('listScreenVisitCount', '0');
                 console.log('5 visits reached, showing ad and resetting counter');
-                
+
                 // Verificar se AdMob está habilitado antes de carregar anúncio
                 if (global.AdMobEnabled) {
                     try {
@@ -122,11 +120,11 @@ const ListScreen = ({ route }) => {
                         const adInstance = InterstitialAd.createForAdRequest(adUnitId, {
                             requestNonPersonalizedAdsOnly: true,
                         });
-                        
+
                         adInstance.addAdEventListener('loaded', () => {
                             adInstance.show();
                         });
-                        
+
                         adInstance.load();
                     } catch (adError) {
                         console.warn('Erro ao carregar anúncio intersticial:', adError);
@@ -140,7 +138,7 @@ const ListScreen = ({ route }) => {
         } catch (error) {
             console.log('Error managing visit count:', error);
         }
-        */
+
     };
 
     // Função para resetar contador (útil para testes)
