@@ -1,5 +1,5 @@
 import React from "react";
-import {Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView, Modal, StatusBar} from "react-native";
+import { Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, TextInput, FlatList, SafeAreaView, ScrollView, Modal, StatusBar } from "react-native";
 import List from "../components/List";
 import { useState, useEffect, useRef } from "react";
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,36 +17,35 @@ const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-9404218606533420/6
 
 const storeData = async (key, value) => {
     try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem(key, jsonValue)
+        const jsonValue = JSON.stringify(value)
+        await AsyncStorage.setItem(key, jsonValue)
     }
     catch (e) {
         console.log(e);
-        }
     }
+}
 
 const getData = async (key) => {
     try {
         const jsonValue = await AsyncStorage.getItem(key)
         return jsonValue != null ? JSON.parse(jsonValue) : null;
     }
-    catch(e) {
+    catch (e) {
         console.log(e);
     }
 }
 
 
-const ListScreen = ({route}) => 
-    {
+const ListScreen = ({ route }) => {
     const { colors } = useTheme();
     const { getText } = useLanguage();
-    const {name, id, date} = route.params;
+    const { name, id, date } = route.params;
     const renderListData = async () => {
         try {
             const listData = await getData(id);
             return listData;
         }
-        catch(e) {
+        catch (e) {
             console.log(e);
         }
     }
@@ -64,7 +63,7 @@ const ListScreen = ({route}) =>
     const checkItems = () => {
         if (list?.Items) {
             list.Items.map((item) => {
-                if(item.checked == true){
+                if (item.checked == true) {
                     setCheckList([...checkList, item]);
                 }
             })
@@ -77,7 +76,7 @@ const ListScreen = ({route}) =>
                 setList(data);
             }
         });
-        
+
         // Carregar preferência de ordenação
         loadSortPreference();
     }, []);
@@ -164,32 +163,32 @@ const ListScreen = ({route}) =>
 
 
     const addItem = async () => {
-        if(item === "") {
+        if (item === "") {
             Alert.alert(getText('validNameRequired'));
             return;
         }
-        
+
         if (price && !isValidCurrency(price)) {
             Alert.alert(getText('invalidPrice'), getText('invalidPriceMessage'));
             return;
         }
-        
+
         if (quantity && !isValidQuantity(quantity)) {
             Alert.alert(getText('invalidQuantity'), getText('invalidQuantityMessage'));
             return;
         }
-        
+
         const itemPrice = price || '0';
         const itemQuantity = quantity || '1';
-        
+
         const newItem = new Item(item, itemPrice, itemQuantity);
         const itemTotalCents = multiplyCurrency(newItem.priceCents, newItem.quantity);
-        
-        const newList = {...list};
+
+        const newList = { ...list };
         newList.TotalPrice = addCurrency(newList.TotalPrice, itemTotalCents);
         newList.TotalUncheckedPrice = addCurrency(newList.TotalUncheckedPrice, itemTotalCents);
         newList.Items.push(newItem);
-        
+
         setList(newList);
         setItem("");
         setPrice("");
@@ -201,16 +200,16 @@ const ListScreen = ({route}) =>
     // Função para ordenar itens
     const getSortedItems = () => {
         if (!list?.Items) return [];
-        
+
         const items = [...list.Items];
-        
+
         // Separar itens marcados e não marcados
         const checkedItems = items.filter(item => item.checked);
         const uncheckedItems = items.filter(item => !item.checked);
-        
+
         // Aplicar ordenação dentro de cada grupo
         const sortItems = (itemsToSort) => {
-            switch(sortBy) {
+            switch (sortBy) {
                 case 'alphabetical':
                     return itemsToSort.sort((a, b) => a.name.localeCompare(b.name));
                 case 'status':
@@ -219,7 +218,7 @@ const ListScreen = ({route}) =>
                     return itemsToSort;
             }
         };
-        
+
         if (sortBy === 'status') {
             // Mostrar não marcados primeiro, depois marcados embaixo
             return [...sortItems(uncheckedItems), ...sortItems(checkedItems)];
@@ -236,35 +235,35 @@ const ListScreen = ({route}) =>
     };
 
     const removeItem = async (index) => {
-        const newList = {...list}; 
+        const newList = { ...list };
         const itemToRemove = newList.Items[index];
-        
+
         if (itemToRemove) {
             const itemTotalCents = multiplyCurrency(itemToRemove.priceCents, itemToRemove.quantity);
-            
+
             newList.TotalPrice = subtractCurrency(newList.TotalPrice, itemTotalCents);
-            
+
             if (itemToRemove.checked) {
                 newList.TotalCheckedPrice = subtractCurrency(newList.TotalCheckedPrice, itemTotalCents);
             } else {
                 newList.TotalUncheckedPrice = subtractCurrency(newList.TotalUncheckedPrice, itemTotalCents);
             }
-            
+
             newList.Items.splice(index, 1);
             setList(newList);
             await storeData(id, newList);
         }
     }
     const priceCheckItem = async (index) => {
-        const newList = {...list};
+        const newList = { ...list };
         const item = newList.Items[index];
-        
+
         if (item) {
             const itemTotalCents = multiplyCurrency(item.priceCents, item.quantity);
-            
+
             // Toggle the checked status
             newList.Items[index].checked = !newList.Items[index].checked;
-            
+
             if (newList.Items[index].checked) {
                 // Item was unchecked, now checked
                 newList.TotalCheckedPrice = addCurrency(newList.TotalCheckedPrice, itemTotalCents);
@@ -274,209 +273,208 @@ const ListScreen = ({route}) =>
                 newList.TotalCheckedPrice = subtractCurrency(newList.TotalCheckedPrice, itemTotalCents);
                 newList.TotalUncheckedPrice = addCurrency(newList.TotalUncheckedPrice, itemTotalCents);
             }
-            
+
             setList(newList);
             await storeData(id, newList);
         }
     }
-        
+
 
     //console.log(list);
     const flatList = useRef();
 
 
-return (
-    <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
-        style={{flex:1, backgroundColor: colors.background}}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-    >
-        <SafeAreaView style={{flex:1, backgroundColor: colors.background}} >
-            {/* Header com botão de ordenação */}
-            <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-                <TouchableOpacity 
-                    style={[styles.sortButton, { backgroundColor: colors.primary }]}
-                    onPress={() => setSortModalVisible(true)}
-                >
-                    <Icon name="filter" size={20} color="#fff" />
-                    <Text style={styles.sortButtonText}>{getText('sortBy')}</Text>
-                </TouchableOpacity>
-            </View>
+    return (
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1, backgroundColor: colors.background }}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        >
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} >
+                {/* Header com botão de ordenação */}
+                <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+                    <TouchableOpacity
+                        style={[styles.sortButton, { backgroundColor: colors.primary }]}
+                        onPress={() => setSortModalVisible(true)}
+                    >
+                        <Icon name="filter" size={20} color="#fff" />
+                        <Text style={styles.sortButtonText}>{getText('sortBy')}</Text>
+                    </TouchableOpacity>
+                </View>
 
-            <FlatList
-                ref ={flatList}
-                initialNumToRender={14}
-                keyboardDismissMode="on-drag"
-                data={getSortedItems()}
-                keyExtractor={(item, index) => `${item.name}-${index}`}
-                contentContainerStyle={{paddingBottom: 80}}
-                renderItem={({ item, index }) => (
-                    <View style={styles.itemContainer}>
-                        <TouchableOpacity style={styles.checkButtonContainer} onPress={() => {
-                            const originalIndex = list.Items.findIndex(listItem => listItem === item);
-                            priceCheckItem(originalIndex);
-                        }}>
-                            {item.checked ?
-                            <Icon name="checkcircle" size={30} color="#4151E1"></Icon>:
-                            <View style={[styles.checkCircle, { borderColor: colors.border }]}></View>}
+                <FlatList
+                    ref={flatList}
+                    initialNumToRender={14}
+                    keyboardDismissMode="on-drag"
+                    data={getSortedItems()}
+                    keyExtractor={(item, index) => `${item.name}-${index}`}
+                    contentContainerStyle={{ paddingBottom: 80 }}
+                    renderItem={({ item, index }) => (
+                        <View style={styles.itemContainer}>
+                            <TouchableOpacity style={styles.checkButtonContainer} onPress={() => {
+                                const originalIndex = list.Items.findIndex(listItem => listItem === item);
+                                priceCheckItem(originalIndex);
+                            }}>
+                                {item.checked ?
+                                    <Icon name="checkcircle" size={30} color="#4151E1"></Icon> :
+                                    <View style={[styles.checkCircle, { borderColor: colors.border }]}></View>}
+                            </TouchableOpacity>
+
+                            <View style={[styles.itemBox, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+                                <View style={styles.itemNameContainer}>
+                                    <Text
+                                        numberOfLines={2}
+                                        ellipsizeMode="tail"
+                                        style={[
+                                            styles.itemName,
+                                            { color: colors.text },
+                                            item.checked && styles.checkedText
+                                        ]}
+                                    >
+                                        {item.name}
+                                    </Text>
+                                </View>
+                                <View style={styles.itemPriceContainer}>
+                                    <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        style={[
+                                            styles.itemPriceText,
+                                            { color: colors.text },
+                                            item.checked && styles.checkedText
+                                        ]}
+                                    >
+                                        {formatCurrency(item.priceCents)}
+                                    </Text>
+                                </View>
+                                <View style={styles.itemQuantityContainer}>
+                                    <Text
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail"
+                                        style={[
+                                            styles.itemQuantityText,
+                                            { color: colors.text },
+                                            item.checked && styles.checkedText
+                                        ]}
+                                    >
+                                        {item.quantity}x
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => {
+                                        const originalIndex = list.Items.findIndex(listItem => listItem === item);
+                                        removeItem(originalIndex);
+                                    }}
+                                >
+                                    <Icon name="delete" size={20} color="#f00" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    )}
+                    ListFooterComponent={() => (
+                        list?.Items?.length > 0 ?
+                            <View style={{ alignItems: "center", justifyContent: "center", margin: 10 }}>
+                                <View style={{ flexDirection: "row" }}>
+                                    <Text style={{ color: colors.success, fontWeight: "bold" }}>
+                                        {getText('totalChecked')}: {formatCurrency(list.TotalCheckedPrice || 0)}
+                                    </Text>
+                                    <Text style={{ color: colors.success, fontWeight: "bold" }}> + </Text>
+                                    <Text style={{ color: colors.success, fontWeight: "bold" }}>
+                                        {getText('totalUnchecked')}: {formatCurrency(list.TotalUncheckedPrice || 0)}
+                                    </Text>
+                                </View>
+                                <Text style={{ color: colors.success, fontWeight: "bold" }}>
+                                    {getText('totalPrice')}: {formatCurrency(list.TotalPrice || 0)}
+                                </Text>
+                            </View> : null
+                    )}
+                    ListEmptyComponent={() => (
+                        <View style={{ alignItems: "center", justifyContent: "center", margin: 100 }}>
+                            <Icon name="filetext1" size={80} color={colors.textTertiary}></Icon>
+                            <Text style={{ color: colors.textTertiary, marginTop: 20 }} >{getText('emptyListMessage')}</Text>
+                        </View>
+                    )
+                    }
+                />
+                <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-evenly" }}>
+                        <TextInput
+                            placeholder={getText('itemPlaceholder')}
+                            placeholderTextColor={colors.textTertiary}
+                            value={item}
+                            onChangeText={(text) => setItem(text)}
+                            style={[styles.itemInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
+                        />
+                        <TextInput
+                            placeholder={getText('pricePlaceholder')}
+                            placeholderTextColor={colors.textTertiary}
+                            value={price}
+                            onChangeText={(text) => setPrice(text)}
+                            style={[styles.itemPrice, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            placeholder={getText('quantityPlaceholder')}
+                            placeholderTextColor={colors.textTertiary}
+                            value={quantity}
+                            onChangeText={(text) => setQuantity(text)}
+                            style={[styles.itemQuantity, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
+                            keyboardType="numeric"
+                        />
+                        <TouchableOpacity onPress={() => { addItem() }}>
+                            <Icon name="pluscircle" size={30} color="#2e2" />
                         </TouchableOpacity>
+                    </View>
+                </View>
 
-                        <View style={[styles.itemBox, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
-                            <View style={styles.itemNameContainer}>
-                                <Text 
-                                    numberOfLines={2} 
-                                    ellipsizeMode="tail" 
-                                    style={[
-                                        styles.itemName, 
-                                        { color: colors.text },
-                                        item.checked && styles.checkedText
-                                    ]}
-                                >
-                                    {item.name}
-                                </Text>
-                            </View>
-                            <View style={styles.itemPriceContainer}>
-                                <Text 
-                                    numberOfLines={1} 
-                                    ellipsizeMode="tail" 
-                                    style={[
-                                        styles.itemPriceText, 
-                                        { color: colors.text },
-                                        item.checked && styles.checkedText
-                                    ]}
-                                >
-                                    {formatCurrency(item.priceCents)}
-                                </Text>
-                            </View>
-                            <View style={styles.itemQuantityContainer}>
-                                <Text 
-                                    numberOfLines={1} 
-                                    ellipsizeMode="tail" 
-                                    style={[
-                                        styles.itemQuantityText, 
-                                        { color: colors.text },
-                                        item.checked && styles.checkedText
-                                    ]}
-                                >
-                                    {item.quantity}x
-                                </Text>
-                            </View>
-                            <TouchableOpacity 
-                                style={styles.deleteButton}
-                                onPress={() => {
-                                    const originalIndex = list.Items.findIndex(listItem => listItem === item);
-                                    removeItem(originalIndex);
-                                }}
+                {/* Modal de ordenação */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={sortModalVisible}
+                    onRequestClose={() => setSortModalVisible(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>{getText('sortBy')}</Text>
+
+                            <TouchableOpacity
+                                style={[styles.sortOption, sortBy === 'addition' && { backgroundColor: colors.primary + '20' }]}
+                                onPress={() => handleSortChange('addition')}
                             >
-                                <Icon name="delete" size={20} color="#f00"/>
+                                <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAddition')}</Text>
+                                {sortBy === 'addition' && <Icon name="check" size={20} color={colors.primary} />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.sortOption, sortBy === 'alphabetical' && { backgroundColor: colors.primary + '20' }]}
+                                onPress={() => handleSortChange('alphabetical')}
+                            >
+                                <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAlphabetical')}</Text>
+                                {sortBy === 'alphabetical' && <Icon name="check" size={20} color={colors.primary} />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.sortOption, sortBy === 'status' && { backgroundColor: colors.primary + '20' }]}
+                                onPress={() => handleSortChange('status')}
+                            >
+                                <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByStatus')}</Text>
+                                {sortBy === 'status' && <Icon name="check" size={20} color={colors.primary} />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.closeModalButton, { backgroundColor: colors.textTertiary }]}
+                                onPress={() => setSortModalVisible(false)}
+                            >
+                                <Text style={styles.closeModalButtonText}>{getText('close')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
-                )}
-                ListFooterComponent={() => (
-                    list?.Items?.length > 0 ?
-                    <View style={{alignItems:"center", justifyContent:"center", margin:10}}>
-                        <View style={{flexDirection: "row"}}>
-                            <Text style={{color: colors.success, fontWeight:"bold"}}>
-                                {getText('totalChecked')}: {formatCurrency(list.TotalCheckedPrice || 0)}
-                            </Text>
-                            <Text style={{color: colors.success, fontWeight:"bold"}}> + </Text>
-                            <Text style={{color: colors.success, fontWeight:"bold"}}>
-                                {getText('totalUnchecked')}: {formatCurrency(list.TotalUncheckedPrice || 0)}
-                            </Text>
-                        </View>
-                        <Text style={{color: colors.success, fontWeight:"bold"}}>
-                            {getText('totalPrice')}: {formatCurrency(list.TotalPrice || 0)}
-                        </Text>
-                    </View> : null
-                )}
-                ListEmptyComponent={() => (
-                    <View style={{alignItems:"center", justifyContent:"center", margin:100}}>
-                        <Icon name="filetext1" size={80} color={colors.textTertiary}></Icon>
-                        <Text style={{color: colors.textTertiary, marginTop:20}} >{getText('emptyListMessage')}</Text>
-                    </View>
-                )
-                }
-                />
-            <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-                <View style={{flexDirection: "row", alignItems:"center", justifyContent:"space-evenly"}}>
-                    <TextInput
-                        placeholder={getText('itemPlaceholder')}
-                        placeholderTextColor={colors.textTertiary}
-                        value={item}
-                        onChangeText={(text) => setItem(text)}
-                        style={[styles.itemInput, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
-                    />
-                    <TextInput
-                        placeholder={getText('pricePlaceholder')}
-                        placeholderTextColor={colors.textTertiary}
-                        value={price}
-                        onChangeText={(text) => setPrice(text)}
-                        style={[styles.itemPrice, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        placeholder={getText('quantityPlaceholder')}
-                        placeholderTextColor={colors.textTertiary}
-                        value={quantity}
-                        onChangeText={(text) => setQuantity(text)}
-                        style={[styles.itemQuantity, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
-                        keyboardType="numeric"
-                    />
-                    <TouchableOpacity onPress={() => {addItem()}}>
-                        <Icon name="pluscircle" size={30} color="#2e2" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-            
-            {/* Modal de ordenação */}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={sortModalVisible}
-                onRequestClose={() => setSortModalVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-                        <Text style={[styles.modalTitle, { color: colors.text }]}>{getText('sortBy')}</Text>
-                        
-                        <TouchableOpacity 
-                            style={[styles.sortOption, sortBy === 'addition' && { backgroundColor: colors.primary + '20' }]}
-                            onPress={() => handleSortChange('addition')}
-                        >
-                            <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAddition')}</Text>
-                            {sortBy === 'addition' && <Icon name="check" size={20} color={colors.primary} />}
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[styles.sortOption, sortBy === 'alphabetical' && { backgroundColor: colors.primary + '20' }]}
-                            onPress={() => handleSortChange('alphabetical')}
-                        >
-                            <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAlphabetical')}</Text>
-                            {sortBy === 'alphabetical' && <Icon name="check" size={20} color={colors.primary} />}
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[styles.sortOption, sortBy === 'status' && { backgroundColor: colors.primary + '20' }]}
-                            onPress={() => handleSortChange('status')}
-                        >
-                            <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByStatus')}</Text>
-                            {sortBy === 'status' && <Icon name="check" size={20} color={colors.primary} />}
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[styles.closeModalButton, { backgroundColor: colors.textTertiary }]}
-                            onPress={() => setSortModalVisible(false)}
-                        >
-                            <Text style={styles.closeModalButtonText}>{getText('close')}</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-            <AdBanner />
-        </SafeAreaView>
-    </KeyboardAvoidingView>
-);
+                </Modal>
+            </SafeAreaView>
+        </KeyboardAvoidingView>
+    );
 }
 const styles = StyleSheet.create({
     header: {
