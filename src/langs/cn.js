@@ -9,9 +9,9 @@ const cn = {
     appVersion: "应用版本",
     contactUs: "联系我们",
     comingSoon: "即将推出",
-    version: "1.0.0",
+    version: "1.0.2",
     contactEmail: "marolinaana@gmail.com",
-    
+
     // HomeScreen
     listNamePlaceholder: "列表名称",
     invalidListName: "无效的列表名称",
@@ -21,7 +21,7 @@ const cn = {
     createList: "创建列表",
     items: "项目",
     errorDeletingList: "删除列表出错",
-    
+
     // ListScreen
     validNameRequired: "项目需要有效的名称。",
     invalidPrice: "无效价格",
@@ -35,7 +35,7 @@ const cn = {
     totalUnchecked: "未选总计",
     totalPrice: "总价格",
     emptyListMessage: "您的列表为空。",
-    
+
     // DeleteScreen
     deletedLists: "已删除列表",
     listsInTrash: "个列表在回收站",
@@ -52,11 +52,11 @@ const cn = {
     deleteForeverMessage: "您确定要永久删除\"{0}\"吗？此操作无法撤销。",
     emptyTrash: "回收站为空",
     emptyTrashMessage: "目前没有已删除的列表",
-    
+
     // ConfigScreen
     emailNotAvailable: "邮箱不可用",
     contactEmailMessage: "请联系我们：{0}",
-    
+
     // Sorting options
     sortBy: "排序方式",
     sortByAddition: "添加顺序",

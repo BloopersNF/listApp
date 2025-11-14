@@ -9,9 +9,9 @@ const es = {
     appVersion: "Versión de la App",
     contactUs: "Contáctanos",
     comingSoon: "Próximamente",
-    version: "1.0.0",
+    version: "1.0.2",
     contactEmail: "marolinaana@gmail.com",
-    
+
     // HomeScreen
     listNamePlaceholder: "Nombre de la Lista",
     invalidListName: "Nombre de lista inválido",
@@ -21,7 +21,7 @@ const es = {
     createList: "Crear Lista",
     items: "artículos",
     errorDeletingList: "Error al eliminar lista",
-    
+
     // ListScreen
     validNameRequired: "El artículo necesita un nombre válido.",
     invalidPrice: "Precio inválido",
@@ -35,7 +35,7 @@ const es = {
     totalUnchecked: "Total desmarcados",
     totalPrice: "Precio total",
     emptyListMessage: "Su lista está vacía.",
-    
+
     // DeleteScreen
     deletedLists: "Listas Eliminadas",
     listsInTrash: "listas en papelera",
@@ -52,11 +52,11 @@ const es = {
     deleteForeverMessage: "¿Realmente desea eliminar \"{0}\" permanentemente? Esta acción no se puede deshacer.",
     emptyTrash: "Papelera Vacía",
     emptyTrashMessage: "No hay listas eliminadas en este momento",
-    
+
     // ConfigScreen
     emailNotAvailable: "Email no disponible",
     contactEmailMessage: "Por favor contáctenos en: {0}",
-    
+
     // Sorting options
     sortBy: "Ordenar por",
     sortByAddition: "Orden de adición",
