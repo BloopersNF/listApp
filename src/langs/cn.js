@@ -9,7 +9,7 @@ const cn = {
     appVersion: "应用版本",
     contactUs: "联系我们",
     comingSoon: "即将推出",
-    version: "1.0.2",
+    version: "1.1.2",
     contactEmail: "marolinaana@gmail.com",
 
     // HomeScreen
@@ -62,7 +62,12 @@ const cn = {
     sortByAddition: "添加顺序",
     sortByAlphabetical: "字母顺序",
     sortByStatus: "按状态（已选在底部）",
-    close: "关闭"
+    close: "关闭",
+
+    // Share
+    shareList: "分享",
+    shareError: "分享错误",
+    shareErrorMessage: "无法分享列表"
 };
 
 export default cn;
