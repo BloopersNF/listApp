@@ -25,7 +25,7 @@
       ]
     ],
     "slug": "listApp",
-    "version": "1.0.2",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png",
     "userInterfaceStyle": "light",

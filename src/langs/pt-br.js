@@ -9,7 +9,7 @@ const pt = {
     appVersion: "Versão do App",
     contactUs: "Fale Conosco",
     comingSoon: "Em Breve",
-    version: "1.0.2",
+    version: "1.1.2",
     contactEmail: "marolinaana@gmail.com",
 
     // HomeScreen
@@ -62,7 +62,12 @@ const pt = {
     sortByAddition: "Ordem de adição",
     sortByAlphabetical: "Ordem alfabética",
     sortByStatus: "Por status (marcados embaixo)",
-    close: "Fechar"
+    close: "Fechar",
+
+    // Share
+    shareList: "Compartilhar",
+    shareError: "Erro ao compartilhar",
+    shareErrorMessage: "Não foi possível compartilhar a lista"
 };
 
 export default pt;

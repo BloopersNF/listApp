@@ -9,7 +9,7 @@ const fr = {
     appVersion: "Version de l'App",
     contactUs: "Nous Contacter",
     comingSoon: "Bientôt Disponible",
-    version: "1.0.2",
+    version: "1.1.2",
     contactEmail: "marolinaana@gmail.com",
 
     // HomeScreen
@@ -62,7 +62,12 @@ const fr = {
     sortByAddition: "Ordre d'ajout",
     sortByAlphabetical: "Ordre alphabétique",
     sortByStatus: "Par statut (cochés en bas)",
-    close: "Fermer"
+    close: "Fermer",
+
+    // Share
+    shareList: "Partager",
+    shareError: "Erreur de partage",
+    shareErrorMessage: "Impossible de partager la liste"
 };
 
 export default fr;

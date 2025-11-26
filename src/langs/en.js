@@ -10,7 +10,7 @@ const en = {
     appVersion: "App Version",
     contactUs: "Contact Us",
     comingSoon: "Coming Soon",
-    version: "1.0.2",
+    version: "1.1.2",
     contactEmail: "marolinaana@gmail.com",
 
     // HomeScreen
@@ -31,7 +31,7 @@ const en = {
     invalidQuantityMessage: "Please enter a valid quantity.",
     itemPlaceholder: "Item",
     pricePlaceholder: "price",
-    quantityPlaceholder: "qty",
+    quantityPlaceholder: "n",
     totalChecked: "Total checked",
     totalUnchecked: "Total unchecked",
     totalPrice: "Total price",
@@ -63,7 +63,12 @@ const en = {
     sortByAddition: "Order of addition",
     sortByAlphabetical: "Alphabetical order",
     sortByStatus: "By status (checked at bottom)",
-    close: "Close"
+    close: "Close",
+
+    // Share
+    shareList: "Share",
+    shareError: "Share error",
+    shareErrorMessage: "Unable to share the list"
 };
 
 export default en;
