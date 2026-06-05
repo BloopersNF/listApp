@@ -1,6 +1,7 @@
 
 const en = {
     language: "Select Language",
+    languageAuto: "Auto (Device)",
     greeting: "Hello",
     welcome: "Welcome",
     goodbye: "Goodbye",
@@ -50,13 +51,13 @@ const en = {
     restore: "Restore",
     delete: "Delete",
     deleteForever: "Delete Permanently",
-    deleteForeverMessage: "Do you really want to permanently delete \"{0}\"? This action cannot be undone.",
+    deleteForeverMessage: "Do you really want to permanently delete \"{{0}}\"? This action cannot be undone.",
     emptyTrash: "Empty Trash",
     emptyTrashMessage: "There are no deleted lists at the moment",
 
     // ConfigScreen
     emailNotAvailable: "Email not available",
-    contactEmailMessage: "Please contact us at: {0}",
+    contactEmailMessage: "Please contact us at: {{0}}",
 
     // Sorting options
     sortBy: "Sort by",

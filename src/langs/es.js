@@ -1,5 +1,6 @@
 const es = {
     language: "Seleccionar Idioma",
+    languageAuto: "Automático (Dispositivo)",
     greeting: "Hola",
     welcome: "Bienvenido",
     goodbye: "Adiós",
@@ -49,13 +50,13 @@ const es = {
     restore: "Restaurar",
     delete: "Eliminar",
     deleteForever: "Eliminar Permanentemente",
-    deleteForeverMessage: "¿Realmente desea eliminar \"{0}\" permanentemente? Esta acción no se puede deshacer.",
+    deleteForeverMessage: "¿Realmente desea eliminar \"{{0}}\" permanentemente? Esta acción no se puede deshacer.",
     emptyTrash: "Papelera Vacía",
     emptyTrashMessage: "No hay listas eliminadas en este momento",
 
     // ConfigScreen
     emailNotAvailable: "Email no disponible",
-    contactEmailMessage: "Por favor contáctenos en: {0}",
+    contactEmailMessage: "Por favor contáctenos en: {{0}}",
 
     // Sorting options
     sortBy: "Ordenar por",

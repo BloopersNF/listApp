@@ -1,5 +1,6 @@
 const fr = {
     language: "Sélectionner la Langue",
+    languageAuto: "Automatique (Appareil)",
     greeting: "Bonjour",
     welcome: "Bienvenue",
     goodbye: "Au revoir",
@@ -49,13 +50,13 @@ const fr = {
     restore: "Restaurer",
     delete: "Supprimer",
     deleteForever: "Supprimer Définitivement",
-    deleteForeverMessage: "Voulez-vous vraiment supprimer \"{0}\" définitivement? Cette action ne peut pas être annulée.",
+    deleteForeverMessage: "Voulez-vous vraiment supprimer \"{{0}}\" définitivement? Cette action ne peut pas être annulée.",
     emptyTrash: "Corbeille Vide",
     emptyTrashMessage: "Il n'y a aucune liste supprimée pour le moment",
 
     // ConfigScreen
     emailNotAvailable: "Email non disponible",
-    contactEmailMessage: "Veuillez nous contacter à: {0}",
+    contactEmailMessage: "Veuillez nous contacter à: {{0}}",
 
     // Sorting options
     sortBy: "Trier par",

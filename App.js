@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
@@ -10,6 +10,7 @@ import { LanguageProvider } from './src/context/LanguageContext';
 import CustomSplashScreen from './src/components/CustomSplashScreen';
 import * as SplashScreen from 'expo-splash-screen';
 import 'expo-dev-client';
+import './src/i18n';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,15 +40,15 @@ const App = () => {
         // Inicializar o Google Mobile Ads SDK com detecção de incompatibilidade
         try {
           console.log('Tentando inicializar AdMob...');
-          
+
           // Timeout de 3 segundos para detectar problemas de inicialização
           const initPromise = mobileAds().initialize();
-          const timeoutPromise = new Promise((_, reject) => 
+          const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('AdMob initialization timeout')), 3000)
           );
 
           await Promise.race([initPromise, timeoutPromise]);
-          
+
           global.AdMobEnabled = true;
           console.log('✅ AdMob inicializado com sucesso');
         } catch (admobError) {
@@ -55,7 +56,7 @@ const App = () => {
           global.AdMobEnabled = false;
           // Continuar sem AdMob se falhar
         }
-        
+
         // Pre-load fonts, make any API calls you need to do here
         // Simulate app loading time
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -96,7 +97,7 @@ const App = () => {
       <ThemeProvider>
         <View style={styles.container} onLayout={onLayoutRootView}>
           <NavigationContainer>
-            <StackScreen/>
+            <StackScreen />
           </NavigationContainer>
         </View>
       </ThemeProvider>

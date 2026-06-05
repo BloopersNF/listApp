@@ -1,5 +1,6 @@
 const cn = {
     language: "选择语言",
+    languageAuto: "自动（设备）",
     greeting: "你好",
     welcome: "欢迎",
     goodbye: "再见",
@@ -49,13 +50,13 @@ const cn = {
     restore: "恢复",
     delete: "删除",
     deleteForever: "永久删除",
-    deleteForeverMessage: "您确定要永久删除\"{0}\"吗？此操作无法撤销。",
+    deleteForeverMessage: "您确定要永久删除\"{{0}}\"吗？此操作无法撤销。",
     emptyTrash: "回收站为空",
     emptyTrashMessage: "目前没有已删除的列表",
 
     // ConfigScreen
     emailNotAvailable: "邮箱不可用",
-    contactEmailMessage: "请联系我们：{0}",
+    contactEmailMessage: "请联系我们：{{0}}",
 
     // Sorting options
     sortBy: "排序方式",

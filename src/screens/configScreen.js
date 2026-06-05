@@ -6,7 +6,7 @@ import { useLanguage } from "../context/LanguageContext";
 
 const ConfigScreen = () => {
     const { isDarkMode, toggleTheme, colors } = useTheme();
-    const { selectedLanguage, changeLanguage, getText, availableLanguages } = useLanguage();
+    const { selectedLanguage, languageMode, changeLanguage, setAutoLanguage, getText, availableLanguages } = useLanguage();
     const [aboutModalVisible, setAboutModalVisible] = useState(false);
     const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
@@ -15,7 +15,7 @@ const ConfigScreen = () => {
         const subject = "List App Support";
         const body = "Hello, I need help with...";
         const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        
+
         Linking.canOpenURL(mailtoUrl)
             .then((supported) => {
                 if (supported) {
@@ -30,9 +30,21 @@ const ConfigScreen = () => {
     };
 
     const handleLanguageSelect = (languageCode) => {
-        changeLanguage(languageCode);
+        if (languageCode === 'auto') {
+            setAutoLanguage();
+        } else {
+            changeLanguage(languageCode);
+        }
         setLanguageModalVisible(false);
     };
+
+    const languageOptions = [
+        { code: 'auto', name: getText('languageAuto'), flag: '🌐', isAuto: true },
+        ...availableLanguages.map((language) => ({
+            ...language,
+            isAuto: false,
+        })),
+    ];
 
     const configItems = [
         {
@@ -202,17 +214,17 @@ const ConfigScreen = () => {
                 <FlatList
                     data={configItems}
                     renderItem={({ item }) => (
-                        <TouchableOpacity 
-                            style={styles.listItem} 
+                        <TouchableOpacity
+                            style={styles.listItem}
                             onPress={item.action}
                             activeOpacity={0.7}
                         >
                             <View style={styles.itemLeft}>
                                 <View style={styles.itemIcon}>
-                                    <Icon 
-                                        name={item.icon} 
-                                        size={24} 
-                                        color={item.isPremium ? "#FFD700" : colors.text} 
+                                    <Icon
+                                        name={item.icon}
+                                        size={24}
+                                        color={item.isPremium ? "#FFD700" : colors.text}
                                     />
                                 </View>
                                 <Text style={item.isPremium ? styles.premiumText : styles.itemText}>
@@ -230,10 +242,10 @@ const ConfigScreen = () => {
                                     />
                                 )}
                                 {item.showArrow && (
-                                    <Icon 
-                                        name="right" 
-                                        size={16} 
-                                        color={colors.textTertiary} 
+                                    <Icon
+                                        name="right"
+                                        size={16}
+                                        color={colors.textTertiary}
                                     />
                                 )}
                             </View>
@@ -261,18 +273,18 @@ const ConfigScreen = () => {
                         <Text style={styles.modalVersion}>
                             v{getText('version')}
                         </Text>
-                        
-                        <TouchableOpacity 
-                            style={styles.contactButton} 
+
+                        <TouchableOpacity
+                            style={styles.contactButton}
                             onPress={handleContactUs}
                         >
                             <Text style={styles.contactButtonText}>
                                 {getText('contactUs')}
                             </Text>
                         </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={styles.closeButton} 
+
+                        <TouchableOpacity
+                            style={styles.closeButton}
                             onPress={() => setAboutModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>
@@ -294,36 +306,42 @@ const ConfigScreen = () => {
                         <Text style={styles.modalTitle}>
                             {getText('language')}
                         </Text>
-                        
-                        {availableLanguages.map((language) => (
-                            <TouchableOpacity
-                                key={language.code}
-                                style={[
-                                    styles.languageItem,
-                                    selectedLanguage === language.code && styles.selectedLanguageItem
-                                ]}
-                                onPress={() => handleLanguageSelect(language.code)}
-                            >
-                                <Text style={styles.languageFlag}>{language.flag}</Text>
-                                <Text style={[
-                                    styles.languageName,
-                                    selectedLanguage === language.code && styles.selectedLanguageName
-                                ]}>
-                                    {language.name}
-                                </Text>
-                                {selectedLanguage === language.code && (
-                                    <Icon 
-                                        name="check" 
-                                        size={20} 
-                                        color={colors.primary} 
-                                        style={{ marginLeft: 'auto' }}
-                                    />
-                                )}
-                            </TouchableOpacity>
-                        ))}
-                        
-                        <TouchableOpacity 
-                            style={styles.closeButton} 
+
+                        {languageOptions.map((language) => {
+                            const isSelected = language.isAuto
+                                ? languageMode === 'auto'
+                                : languageMode === 'manual' && selectedLanguage === language.code;
+
+                            return (
+                                <TouchableOpacity
+                                    key={language.code}
+                                    style={[
+                                        styles.languageItem,
+                                        isSelected && styles.selectedLanguageItem
+                                    ]}
+                                    onPress={() => handleLanguageSelect(language.code)}
+                                >
+                                    <Text style={styles.languageFlag}>{language.flag}</Text>
+                                    <Text style={[
+                                        styles.languageName,
+                                        isSelected && styles.selectedLanguageName
+                                    ]}>
+                                        {language.name}
+                                    </Text>
+                                    {isSelected && (
+                                        <Icon
+                                            name="check"
+                                            size={20}
+                                            color={colors.primary}
+                                            style={{ marginLeft: 'auto' }}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            )
+                        })}
+
+                        <TouchableOpacity
+                            style={styles.closeButton}
                             onPress={() => setLanguageModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>

@@ -1,5 +1,6 @@
 const pt = {
     language: "Selecionar Idioma",
+    languageAuto: "Automático (Dispositivo)",
     greeting: "Olá",
     welcome: "Bem-vindo",
     goodbye: "Adeus",
@@ -49,13 +50,13 @@ const pt = {
     restore: "Restaurar",
     delete: "Deletar",
     deleteForever: "Deletar Permanentemente",
-    deleteForeverMessage: "Você realmente deseja deletar \"{0}\" permanentemente? Esta ação não pode ser desfeita.",
+    deleteForeverMessage: "Você realmente deseja deletar \"{{0}}\" permanentemente? Esta ação não pode ser desfeita.",
     emptyTrash: "Lixeira Vazia",
     emptyTrashMessage: "Não há listas deletadas no momento",
 
     // ConfigScreen
     emailNotAvailable: "Email não disponível",
-    contactEmailMessage: "Entre em contato conosco em: {0}",
+    contactEmailMessage: "Entre em contato conosco em: {{0}}",
 
     // Sorting options
     sortBy: "Ordenar por",
