@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { SafeAreaView, Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, Button, TextInput, FlatList } from "react-native";
+import { SafeAreaView, Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CreateButton from "../components/createButton";
 import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
+import Item from "../components/Item";
 import { useFocusEffect } from '@react-navigation/native';
 import uuid from 'react-native-uuid';
 import { useTheme } from "../context/ThemeContext";
@@ -41,6 +42,33 @@ const storeData = async (key, value) => {
         console.log('Error in storeData:', e);
     }
 }
+
+const STARTER_TEMPLATES = [
+    {
+        titleKey: 'homeTemplateWeeklyTitle',
+        descriptionKey: 'homeTemplateWeeklyDescription',
+        icon: 'shoppingcart',
+        itemKeys: ['templateItemRice', 'templateItemBeans', 'templateItemMilk', 'templateItemBread', 'templateItemEggs', 'templateItemFruit']
+    },
+    {
+        titleKey: 'homeTemplateBbqTitle',
+        descriptionKey: 'homeTemplateBbqDescription',
+        icon: 'star',
+        itemKeys: ['templateItemMeat', 'templateItemCharcoal', 'templateItemGarlicBread', 'templateItemSoda', 'templateItemIce']
+    },
+    {
+        titleKey: 'homeTemplatePharmacyTitle',
+        descriptionKey: 'homeTemplatePharmacyDescription',
+        icon: 'medicinebox',
+        itemKeys: ['templateItemToothpaste', 'templateItemSoap', 'templateItemShampoo', 'templateItemMedicine']
+    },
+    {
+        titleKey: 'homeTemplateCleaningTitle',
+        descriptionKey: 'homeTemplateCleaningDescription',
+        icon: 'home',
+        itemKeys: ['templateItemDetergent', 'templateItemSponge', 'templateItemTrashBags', 'templateItemDisinfectant']
+    }
+];
 
 function formatDate(date) {
     const day = date.getDate().toString().padStart(2, '0'); // Adiciona um zero à esquerda se necessário
@@ -225,8 +253,10 @@ const HomeScreen = ({ navigation }) => {
         setModalVisible(false);
     }
 
-    const createList = async () => {
-        if (!listName || listName.trim() === '') {
+    const createList = async (nameOverride = listName, templateItemKeys = []) => {
+        const normalizedListName = nameOverride?.trim();
+
+        if (!normalizedListName) {
             Alert.alert(getText('invalidListName'));
             return;
         }
@@ -240,19 +270,63 @@ const HomeScreen = ({ navigation }) => {
                 return;
             }
 
-            const newList = new List(listName.trim(), [], 0, false, newId, newDate);
+            const starterItems = templateItemKeys.map((itemKey) => new Item(getText(itemKey), '0', '1'));
+            const newList = new List(normalizedListName, starterItems, 0, false, newId, newDate);
             console.log('Creating list with ID:', newId);
 
             await storeData(newId, newList);
             setListName('');
             await fetchLists();
             setModalVisible(false);
-            navigation.navigate('List', { name: listName.trim(), id: String(newId), date: newDate });
+            navigation.navigate('List', { name: normalizedListName, id: String(newId), date: newDate });
         } catch (error) {
             console.log('Error creating list:', error);
             Alert.alert(getText('errorCreatingList'));
         }
     };
+
+    const createTemplateList = (template) => {
+        createList(getText(template.titleKey), template.itemKeys);
+    };
+
+    const renderEmptyState = () => (
+        <View style={styles.emptyState}>
+            <View style={[styles.emptyIconContainer, { backgroundColor: colors.primary + '15' }]}>
+                <Icon name="shoppingcart" size={42} color={colors.primary} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>{getText('homeEmptyTitle')}</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>{getText('homeEmptySubtitle')}</Text>
+
+            <TouchableOpacity
+                style={[styles.primaryEmptyButton, { backgroundColor: colors.primary }]}
+                onPress={() => setModalVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel={getText('homeCreateBlank')}
+            >
+                <Icon name="pluscircleo" size={18} color="#fff" />
+                <Text style={styles.primaryEmptyButtonText}>{getText('homeCreateBlank')}</Text>
+            </TouchableOpacity>
+
+            <Text style={[styles.templateSectionTitle, { color: colors.text }]}>{getText('homeTemplateSectionTitle')}</Text>
+            <View style={styles.templateGrid}>
+                {STARTER_TEMPLATES.map((template) => (
+                    <TouchableOpacity
+                        key={template.titleKey}
+                        style={[styles.templateCard, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+                        onPress={() => createTemplateList(template)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${getText('homeUseTemplate')}: ${getText(template.titleKey)}`}
+                    >
+                        <Icon name={template.icon} size={22} color={colors.primary} />
+                        <Text style={[styles.templateTitle, { color: colors.text }]}>{getText(template.titleKey)}</Text>
+                        <Text style={[styles.templateDescription, { color: colors.textTertiary }]} numberOfLines={2}>
+                            {getText(template.descriptionKey)}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        </View>
+    );
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -311,9 +385,10 @@ const HomeScreen = ({ navigation }) => {
                 keyExtractor={(item) => item}
                 initialNumToRender={10}
                 removeClippedSubviews={true}
-                contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={[styles.listContainer, lists.length === 0 && styles.emptyListContainer]}
+                ListEmptyComponent={renderEmptyState}
             />
-            <CreateButton method={() => setModalVisible(true)} />
+            <CreateButton method={() => setModalVisible(true)} accessibilityLabel={getText('createList')} />
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -338,7 +413,7 @@ const HomeScreen = ({ navigation }) => {
                                     <Icon name="closecircleo" size={50} color="#E15141"></Icon>
                                 </TouchableOpacity>
                                 <View style={{ marginRight: 100 }}></View>
-                                <TouchableOpacity onPress={createList} title={getText('createList')}>
+                                <TouchableOpacity onPress={() => createList()} title={getText('createList')}>
                                     <Icon name="checkcircleo" size={50} color="#4151E1"></Icon>
                                 </TouchableOpacity>
                             </View>
@@ -353,6 +428,86 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    listContainer: {
+        paddingBottom: 100,
+    },
+    emptyListContainer: {
+        flexGrow: 1,
+        justifyContent: "center",
+    },
+    emptyState: {
+        paddingHorizontal: 24,
+        paddingVertical: 32,
+        alignItems: "center",
+    },
+    emptyIconContainer: {
+        width: 82,
+        height: 82,
+        borderRadius: 41,
+        justifyContent: "center",
+        alignItems: "center",
+        marginBottom: 18,
+    },
+    emptyTitle: {
+        fontSize: 22,
+        fontWeight: "700",
+        textAlign: "center",
+        marginBottom: 8,
+    },
+    emptySubtitle: {
+        fontSize: 15,
+        lineHeight: 21,
+        textAlign: "center",
+        marginBottom: 20,
+        maxWidth: 320,
+    },
+    primaryEmptyButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        borderRadius: 8,
+        marginBottom: 24,
+        minHeight: 46,
+    },
+    primaryEmptyButtonText: {
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: "700",
+        marginLeft: 8,
+    },
+    templateSectionTitle: {
+        alignSelf: "flex-start",
+        fontSize: 16,
+        fontWeight: "700",
+        marginBottom: 12,
+    },
+    templateGrid: {
+        width: "100%",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+    },
+    templateCard: {
+        width: "48%",
+        minHeight: 122,
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+        justifyContent: "space-between",
+    },
+    templateTitle: {
+        fontSize: 14,
+        fontWeight: "700",
+        marginTop: 8,
+    },
+    templateDescription: {
+        fontSize: 12,
+        lineHeight: 17,
+        marginTop: 6,
     },
     centeredView: {
         flex: 1,

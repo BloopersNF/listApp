@@ -21,7 +21,7 @@ MarketList deve ser o app simples para planejar compras com controle de gasto, r
 
 - Simplicidade: começar localmente, sem cadastro obrigatório.
 - Orçamento: preço, quantidade e total são parte central, não recurso escondido.
-- Templates: acelerar compras recorrentes e ocasiões.
+- Templates: acelerar compras recorrentes e ocasiões, começando por modelos rápidos dentro da Home.
 - Confiança: lixeira funcional, dados locais previsíveis e monetização rotulada.
 
 ## Não tentar agora
@@ -36,7 +36,7 @@ MarketList deve ser o app simples para planejar compras com controle de gasto, r
 - "Planeje sua compra e veja o total antes do caixa."
 - "Listas simples para mercado, farmácia, casa e churrasco."
 - "Apagou sem querer? Recupere pela lixeira."
-- "Comece com templates prontos e ajuste do seu jeito."
+- "Comece com modelos prontos e ajuste do seu jeito."
 
 ## Métricas sugeridas
 

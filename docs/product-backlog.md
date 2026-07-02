@@ -4,41 +4,48 @@ Atualizado em 2026-07-02.
 
 ## Now
 
-- Descrição: Empty state da Home com proposta de valor, CTA textual "Criar lista" e sugestão de primeira lista.
+- Descrição: Confirmar em dispositivo real o fluxo de primeiro uso com modelos rápidos na Home.
   Impacto esperado: alto.
   Esforço: baixo.
   Risco: baixo.
-  Fonte ou justificativa: análise de produto; primeira ativação está pouco orientada.
-  Status: pronto para próxima execução.
+  Fonte ou justificativa: melhoria implementada em 2026-07-02; precisa validação manual de layout/toque.
+  Status: pronto para QA.
+
+- Descrição: Adicionar confirmação ou desfazer ao deletar lista pela Home.
+  Impacto esperado: médio.
+  Esforço: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: exclusão atual é imediata; a lixeira reduz dano, mas não reduz susto.
+  Status: planejado.
 
 - Descrição: Centralizar leitura segura de listas do `AsyncStorage` em helper compartilhado.
   Impacto esperado: médio.
   Esforço: médio.
   Risco: baixo.
-  Fonte ou justificativa: bug corrigido hoje mostrou duplicação de schema entre Home e Delete.
+  Fonte ou justificativa: Home e Delete duplicam lista de chaves de configuração e parsing defensivo.
   Status: planejado.
 
 ## Next
 
-- Descrição: Templates rápidos para "Compra da semana", "Churrasco", "Farmácia", "Faxina" e "Material escolar".
-  Impacto esperado: alto.
+- Descrição: Expandir modelos rápidos para "Compra do mês", "Feira", "Material escolar" e "Pet".
+  Impacto esperado: médio/alto.
   Esforço: médio.
   Risco: baixo.
-  Fonte ou justificativa: AnyList/Listonic/Out of Milk reforçam templates, histórico e ocasiões.
-  Status: especificar conteúdo e traduções.
+  Fonte ou justificativa: AnyList/Listonic/Out of Milk reforçam ocasiões, templates e sugestões.
+  Status: especificar itens e traduções.
 
-- Descrição: Confirmação ou desfazer ao deletar lista pela Home.
+- Descrição: Corrigir exportação web com `@expo/metro-runtime@~5.0.5`.
   Impacto esperado: médio.
   Esforço: baixo.
   Risco: baixo.
-  Fonte ou justificativa: exclusão atual é imediata, apesar de existir lixeira.
+  Fonte ou justificativa: `npx expo export --platform web` falhou antes de compilar por dependência ausente.
   Status: planejado.
 
-- Descrição: Corrigir variáveis globais implícitas (`Tab`, `getAllKeys`).
+- Descrição: Corrigir variáveis globais implícitas restantes e padronizar declarações.
   Impacto esperado: médio.
   Esforço: baixo.
   Risco: baixo.
-  Fonte ou justificativa: análise técnica; risco de vazamento global/crash em modo estrito.
+  Fonte ou justificativa: análise técnica; reduz risco em modo estrito e manutenção.
   Status: planejado.
 
 ## Later
@@ -57,13 +64,20 @@ Atualizado em 2026-07-02.
   Fonte ou justificativa: AnyList, OurGroceries e Listonic usam agrupamento/aisles para reduzir tempo no mercado.
   Status: discovery.
 
+- Descrição: Métrica local/analytics futura para listas criadas a partir de modelos.
+  Impacto esperado: médio.
+  Esforço: médio.
+  Risco: médio.
+  Fonte ou justificativa: templates viraram alavanca de ativação; precisa medir uso antes de expandir muito.
+  Status: bloquear até decisão de analytics/privacidade.
+
 ## Big bets
 
 - Descrição: Páginas públicas de templates indexáveis em PT-BR com CTA para abrir no app.
   Impacto esperado: alto.
   Esforço: alto.
   Risco: médio.
-  Fonte ou justificativa: Out of Milk usa templates públicos; Good Housekeeping/The Strategist mostram valor de conteúdo SEO evergreen.
+  Fonte ou justificativa: Out of Milk usa templates públicos; SEO por intenção pode abrir aquisição orgânica.
   Status: proposta futura.
 
 - Descrição: Ofertas externas rotuladas por origem, com alertas e possível afiliado/cashback.
@@ -79,8 +93,15 @@ Atualizado em 2026-07-02.
   Impacto esperado: alto.
   Esforço: baixo.
   Risco: baixo.
-  Fonte ou justificativa: análise técnica e memória da automação.
+  Fonte ou justificativa: análise técnica de 2026-07-02.
   Status: corrigido em 2026-07-02.
+
+- Descrição: `npx expo export --platform web` falha por falta de `@expo/metro-runtime@~5.0.5`.
+  Impacto esperado: médio.
+  Esforço: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: validação de build em 2026-07-02.
+  Status: pendente.
 
 - Descrição: `app.json` referencia `./assets/Icon.png` para iOS, mas o arquivo não aparece no checkout.
   Impacto esperado: alto para release iOS.
@@ -116,7 +137,7 @@ Atualizado em 2026-07-02.
   Impacto esperado: alto.
   Esforço: médio.
   Risco: médio.
-  Fonte ou justificativa: release usa debug keystore e permissões potencialmente excessivas.
+  Fonte ou justificativa: release usa debug keystore e permissões precisam revisão antes de loja.
   Status: precisa revisão humana.
 
 ## Growth
@@ -132,7 +153,7 @@ Atualizado em 2026-07-02.
   Impacto esperado: médio.
   Esforço: baixo.
   Risco: médio.
-  Fonte ou justificativa: análise de produto; ads cedo podem reduzir ativação.
+  Fonte ou justificativa: ads cedo podem reduzir ativação; agora há fluxo de templates para proteger.
   Status: precisa decisão de monetização.
 
 ## SEO
@@ -144,14 +165,21 @@ Atualizado em 2026-07-02.
   Fonte ou justificativa: Out of Milk e referências editoriais usam páginas por intenção.
   Status: especificar fora do app nativo.
 
-- Descrição: Melhorar metadados de loja com promessa clara: lista simples, orçamento e recuperação.
+- Descrição: Melhorar metadados de loja com promessa clara: lista simples, orçamento, templates e recuperação.
   Impacto esperado: médio.
   Esforço: baixo.
   Risco: baixo.
-  Fonte ou justificativa: Play Store Guide atual é genérico e desatualizado em versão.
+  Fonte ou justificativa: novo posicionamento do app ficou mais claro com templates e lixeira.
   Status: planejado.
 
 ## UX
+
+- Descrição: Estado vazio da Home com CTA e quatro modelos rápidos.
+  Impacto esperado: alto.
+  Esforço: médio.
+  Risco: baixo.
+  Fonte ou justificativa: análise de produto e concorrentes; reduz atrito da primeira lista.
+  Status: implementado em 2026-07-02.
 
 - Descrição: Rótulos nas abas ou tooltips/acessibilidade para Delete/Home/Config.
   Impacto esperado: médio.
@@ -166,10 +194,3 @@ Atualizado em 2026-07-02.
   Risco: baixo.
   Fonte ou justificativa: modal atual usa ícones grandes e pouco texto.
   Status: planejado.
-
-- Descrição: Ajustar inputs de item/preço/quantidade para telas pequenas e idiomas longos.
-  Impacto esperado: médio.
-  Esforço: médio.
-  Risco: médio.
-  Fonte ou justificativa: layout atual usa percentuais apertados.
-  Status: discovery.

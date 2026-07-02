@@ -2,6 +2,15 @@
 
 Atualizado em 2026-07-02.
 
+## Notas da execução de 2026-07-02
+
+- [AnyList](https://www.anylist.com/) reforça criação rápida com sugestões de itens, agrupamento automático, compartilhamento, receitas e meal planning. Oportunidade: MarketList pode começar com templates simples e orçamento antes de tentar receitas completas.
+- [Bring!](https://www.getbring.com/en/home) comunica lista compartilhada, ofertas locais e receitas como rotina familiar. Oportunidade: manter a lista simples, mas preparar uma evolução futura para ocasiões e economia sem tornar o app um feed promocional.
+- [Listonic](https://listonic.com/) destaca orçamento, sugestões por histórico, IA e listas para ocasiões. Oportunidade: templates e histórico são o próximo caminho natural para retenção.
+- [Out of Milk](https://outofmilk.com/) tem templates públicos de listas e histórico de itens. Oportunidade: transformar os modelos do app em inventário público/SEO no futuro.
+- [OurGroceries](https://www.ourgroceries.com/) diferencia com household sync, fotos, notas, quantidades, barcodes e auto-agrupamento. Oportunidade: não tentar sync antes de consolidar a experiência local.
+- [Flipp](https://flipp.com/) conecta lista a flyers, cupons e ofertas locais. Oportunidade: se MarketList entrar em ofertas, precisa rotular origem e manter controle do usuário.
+
 ## AnyList
 
 - Link: https://www.anylist.com/
