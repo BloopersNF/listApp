@@ -119,7 +119,7 @@ const HomeScreen = ({ navigation }) => {
     const [lists, setLists] = useState([]);
     const [id, setId] = useState(0);
 
-    getAllKeys = async () => {
+    const getAllKeys = async () => {
         try {
             const all = await AsyncStorage.getAllKeys();
 

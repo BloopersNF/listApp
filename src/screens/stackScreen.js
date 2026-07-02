@@ -1,7 +1,6 @@
-import { React } from 'react';
+import React from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
 import MainScreen from './mainScreen';
 import ListScreen from './listScreen';
 import AdBanner from '../components/AdBanner';
