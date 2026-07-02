@@ -6,6 +6,23 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 
+const USER_CONFIG_KEYS = new Set([
+    'isDarkMode',
+    'selectedLanguage',
+    'listScreenVisitCount',
+    'listSortPreference',
+    'userPreferences',
+    'appSettings'
+]);
+
+const isValidStoredList = (value) => (
+    value &&
+    typeof value === 'object' &&
+    typeof value.Id === 'string' &&
+    typeof value.Name === 'string' &&
+    Array.isArray(value.Items)
+);
+
 // Tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
     const { colors } = useTheme();
@@ -13,12 +30,32 @@ const DeleteScreen = ({ navigation }) => {
     const [keys, setKeys] = useState([]);
     const [deletedLists, setDeletedLists] = useState([]);
 
+    const getStoredList = async (key) => {
+        if (!key || USER_CONFIG_KEYS.has(key)) {
+            return null;
+        }
+
+        try {
+            const storedValue = await AsyncStorage.getItem(key);
+            if (storedValue == null) {
+                return null;
+            }
+
+            const parsedValue = JSON.parse(storedValue);
+            return isValidStoredList(parsedValue) ? parsedValue : null;
+        } catch (e) {
+            console.log('Ignoring non-list AsyncStorage key in trash:', key, e);
+            return null;
+        }
+    }
+
     // Busca todas as chaves do AsyncStorage
     const getAllKeys = async () => {
         try {
             const all = await AsyncStorage.getAllKeys();
-            setKeys(all);
-            return all;
+            const listKeys = all.filter(key => !USER_CONFIG_KEYS.has(key));
+            setKeys(listKeys);
+            return listKeys;
         } catch (e) {
             console.log(e);
             return [];
@@ -30,16 +67,15 @@ const DeleteScreen = ({ navigation }) => {
         try {
             const allKeys = await AsyncStorage.getAllKeys();
             for (let i = 0; i < allKeys.length; i++) {
-                let list = await AsyncStorage.getItem(allKeys[i]);
-                if (list != null) {
-                    list = JSON.parse(list);
-                    if (list.DeletedAt && list.Deleted) {
-                        const deletedAt = new Date(list.DeletedAt);
+                const key = allKeys[i];
+                const list = await getStoredList(key);
+                if (list?.DeletedAt && list.Deleted) {
+                    const deletedAt = new Date(list.DeletedAt);
+                    if (!Number.isNaN(deletedAt.getTime())) {
                         const now = new Date();
-                        const diffTime = Math.abs(now - deletedAt);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const diffDays = (now.getTime() - deletedAt.getTime()) / (1000 * 60 * 60 * 24);
                         if (diffDays >= 7) {
-                            await AsyncStorage.removeItem(list.Id);
+                            await AsyncStorage.removeItem(key);
                         }
                     }
                 }
@@ -54,18 +90,15 @@ const DeleteScreen = ({ navigation }) => {
         let lists = [];
         try {
             for (let i = 0; i < allKeys.length; i++) {
-                let list = await AsyncStorage.getItem(allKeys[i]);
-                if (list != null) {
-                    list = JSON.parse(list);
-                    if (list.Deleted) {
-                        lists.push({ ...list });
-                    }
+                const list = await getStoredList(allKeys[i]);
+                if (list?.Deleted) {
+                    lists.push({ ...list });
                 }
             }
         } catch (e) {
             console.log(e);
         }
-        return lists;
+        return lists.sort((a, b) => new Date(b.DeletedAt || 0) - new Date(a.DeletedAt || 0));
     }
 
     // Atualiza os estados de chaves e listas deletadas
@@ -93,9 +126,12 @@ const DeleteScreen = ({ navigation }) => {
     // Restaura uma lista deletada
     const restoreList = async (key) => {
         try {
-            let list = await AsyncStorage.getItem(key);
-            list = JSON.parse(list);
+            const list = await getStoredList(key);
+            if (!list) {
+                return;
+            }
             list.Deleted = false;
+            list.DeletedAt = null;
             await AsyncStorage.setItem(key, JSON.stringify(list));
             fetchAndUpdateLists();
         } catch (e) {
@@ -108,12 +144,9 @@ const DeleteScreen = ({ navigation }) => {
         try {
             const allKeys = await AsyncStorage.getAllKeys();
             for (let i = 0; i < allKeys.length; i++) {
-                let list = await AsyncStorage.getItem(allKeys[i]);
-                if (list != null) {
-                    list = JSON.parse(list);
-                    if (list.Deleted) {
-                        await AsyncStorage.removeItem(allKeys[i]);
-                    }
+                const list = await getStoredList(allKeys[i]);
+                if (list?.Deleted) {
+                    await AsyncStorage.removeItem(allKeys[i]);
                 }
             }
             await fetchAndUpdateLists();
