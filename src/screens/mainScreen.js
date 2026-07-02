@@ -1,5 +1,5 @@
-import {React} from 'react'
-import {StyleSheet, View} from 'react-native'
+import React from 'react'
+import {StyleSheet} from 'react-native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './homeScreen';
 import DeleteScreen from './deleteScreen';
@@ -7,7 +7,7 @@ import ConfigScreen from './configScreen';
 import Icon from 'react-native-vector-icons/AntDesign';
 import { useTheme } from '../context/ThemeContext';
 
-Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator();
 
 const MainScreen = () =>{
     const { colors } = useTheme();
