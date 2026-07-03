@@ -10,7 +10,7 @@ const es = {
     appVersion: "Versión de la App",
     contactUs: "Contáctanos",
     comingSoon: "Próximamente",
-    version: "1.1.2",
+    version: "1.3.2",
     contactEmail: "marolinaana@gmail.com",
 
     // HomeScreen

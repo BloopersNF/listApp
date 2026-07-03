@@ -10,7 +10,7 @@ const cn = {
     appVersion: "应用版本",
     contactUs: "联系我们",
     comingSoon: "即将推出",
-    version: "1.1.2",
+    version: "1.3.2",
     contactEmail: "marolinaana@gmail.com",
 
     // HomeScreen
