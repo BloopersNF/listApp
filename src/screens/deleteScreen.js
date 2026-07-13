@@ -9,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 const USER_CONFIG_KEYS = new Set([
     'isDarkMode',
     'selectedLanguage',
+    'languageMode',
     'listScreenVisitCount',
     'listSortPreference',
     'userPreferences',

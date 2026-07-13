@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import StackScreen from './src/screens/stackScreen';
 import firebase from 'firebase/compat/app';
-import mobileAds from 'react-native-google-mobile-ads';
+import mobileAds from './src/utils/mobileAds';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { LanguageProvider } from './src/context/LanguageContext';
 import CustomSplashScreen from './src/components/CustomSplashScreen';
@@ -39,6 +39,11 @@ const App = () => {
       try {
         // Inicializar o Google Mobile Ads SDK com detecção de incompatibilidade
         try {
+          if (Platform.OS === 'web') {
+            global.AdMobEnabled = false;
+            return;
+          }
+
           console.log('Tentando inicializar AdMob...');
 
           // Timeout de 3 segundos para detectar problemas de inicialização

@@ -20,8 +20,14 @@ const cn = {
     errorGeneratingId: "生成列表ID出错",
     close: "关闭",
     createList: "创建列表",
+    createListModalTitle: "命名您的清单",
+    createListModalSubtitle: "使用清晰的名称，方便之后找到这次购物。",
+    listNameExample: "例如：每周采购",
     items: "项目",
     errorDeletingList: "删除列表出错",
+    deleteListConfirmTitle: "将列表移至回收站？",
+    deleteListConfirmMessage: "要将\"{{0}}\"移至回收站吗？您可以在7天内恢复它。",
+    moveToTrash: "移至回收站",
     homeEmptyTitle: "创建第一份清单",
     homeEmptySubtitle: "使用现成模板开始，或创建空清单。",
     homeTemplateSectionTitle: "快速模板",
@@ -56,6 +62,7 @@ const cn = {
     templateItemDisinfectant: "消毒剂",
 
     // ListScreen
+    backToLists: "返回列表",
     validNameRequired: "项目需要有效的名称。",
     invalidPrice: "无效价格",
     invalidPriceMessage: "请输入有效价格。",
@@ -68,6 +75,10 @@ const cn = {
     totalUnchecked: "未选总计",
     totalPrice: "总价格",
     emptyListMessage: "您的列表为空。",
+    listEmptyTitle: "从一个商品开始",
+    listEmptySubtitle: "点按建议，或使用下方字段创建您的清单。",
+    quickAddSuggestions: "快速建议",
+    addSuggestedItem: "添加建议商品",
 
     // DeleteScreen
     deletedLists: "已删除列表",

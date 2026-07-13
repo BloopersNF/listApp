@@ -20,8 +20,14 @@ const fr = {
     errorGeneratingId: "Erreur lors de la génération de l'ID de liste",
     close: "Fermer",
     createList: "Créer une Liste",
+    createListModalTitle: "Nommez votre liste",
+    createListModalSubtitle: "Utilisez un nom clair pour retrouver ces courses plus tard.",
+    listNameExample: "Exemple : courses de la semaine",
     items: "articles",
     errorDeletingList: "Erreur lors de la suppression de la liste",
+    deleteListConfirmTitle: "Déplacer la liste vers la corbeille ?",
+    deleteListConfirmMessage: "Voulez-vous déplacer \"{{0}}\" vers la corbeille ? Vous pouvez la restaurer pendant 7 jours.",
+    moveToTrash: "Déplacer vers la corbeille",
     homeEmptyTitle: "Créez votre première liste",
     homeEmptySubtitle: "Commencez avec un modèle prêt ou créez une liste vide.",
     homeTemplateSectionTitle: "Modèles rapides",
@@ -56,6 +62,7 @@ const fr = {
     templateItemDisinfectant: "Désinfectant",
 
     // ListScreen
+    backToLists: "Retour aux listes",
     validNameRequired: "L'article a besoin d'un nom valide.",
     invalidPrice: "Prix invalide",
     invalidPriceMessage: "Veuillez saisir un prix valide.",
@@ -68,6 +75,10 @@ const fr = {
     totalUnchecked: "Total non coché",
     totalPrice: "Prix total",
     emptyListMessage: "Votre liste est vide.",
+    listEmptyTitle: "Commencez avec un article",
+    listEmptySubtitle: "Touchez une suggestion ou utilisez les champs ci-dessous pour créer votre liste.",
+    quickAddSuggestions: "Suggestions rapides",
+    addSuggestedItem: "Ajouter l'article suggéré",
 
     // DeleteScreen
     deletedLists: "Listes Supprimées",

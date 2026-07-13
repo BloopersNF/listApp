@@ -20,8 +20,14 @@ const pt = {
     errorGeneratingId: "Erro ao gerar ID da lista",
     close: "Fechar",
     createList: "Criar Lista",
+    createListModalTitle: "Nomeie sua lista",
+    createListModalSubtitle: "Use um nome claro para encontrar esta compra depois.",
+    listNameExample: "Exemplo: Compra da semana",
     items: "itens",
     errorDeletingList: "Erro ao deletar lista",
+    deleteListConfirmTitle: "Mover lista para a lixeira?",
+    deleteListConfirmMessage: "Deseja mover \"{{0}}\" para a lixeira? Você pode restaurá-la por 7 dias.",
+    moveToTrash: "Mover para a lixeira",
     homeEmptyTitle: "Crie sua primeira lista",
     homeEmptySubtitle: "Comece com um modelo pronto ou crie uma lista vazia.",
     homeTemplateSectionTitle: "Modelos rápidos",
@@ -56,6 +62,7 @@ const pt = {
     templateItemDisinfectant: "Desinfetante",
 
     // ListScreen
+    backToLists: "Voltar para listas",
     validNameRequired: "O item precisa de um nome válido.",
     invalidPrice: "Preço inválido",
     invalidPriceMessage: "Por favor, insira um preço válido.",
@@ -68,6 +75,10 @@ const pt = {
     totalUnchecked: "Total desmarcados",
     totalPrice: "Preço total",
     emptyListMessage: "Sua lista está vazia.",
+    listEmptyTitle: "Comece com um item",
+    listEmptySubtitle: "Toque em uma sugestão ou use os campos abaixo para montar sua lista.",
+    quickAddSuggestions: "Sugestões rápidas",
+    addSuggestedItem: "Adicionar item sugerido",
 
     // DeleteScreen
     deletedLists: "Listas Deletadas",

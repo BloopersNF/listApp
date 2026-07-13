@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SafeAreaView, Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, TextInput, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CreateButton from "../components/createButton";
@@ -95,6 +95,7 @@ const cleanCorruptedData = async () => {
         const userConfigKeys = [
             'isDarkMode',
             'selectedLanguage',
+            'languageMode',
             'listScreenVisitCount',
             'listSortPreference',
             'userPreferences',
@@ -146,6 +147,7 @@ const HomeScreen = ({ navigation }) => {
     const [keys, setKeys] = useState([]);
     const [lists, setLists] = useState([]);
     const [id, setId] = useState(0);
+    const listNameInputRef = useRef(null);
 
     const getAllKeys = async () => {
         try {
@@ -155,6 +157,7 @@ const HomeScreen = ({ navigation }) => {
             const userConfigKeys = [
                 'isDarkMode',
                 'selectedLanguage',
+                'languageMode',
                 'listScreenVisitCount',
                 'listSortPreference',
                 'userPreferences',
@@ -247,6 +250,18 @@ const HomeScreen = ({ navigation }) => {
         }, [])
     );
 
+    useEffect(() => {
+        if (!modalVisible) {
+            return undefined;
+        }
+
+        const focusTimer = setTimeout(() => {
+            listNameInputRef.current?.focus();
+        }, 150);
+
+        return () => clearTimeout(focusTimer);
+    }, [modalVisible]);
+
 
 
     const closeModal = () => {
@@ -289,6 +304,30 @@ const HomeScreen = ({ navigation }) => {
         createList(getText(template.titleKey), template.itemKeys);
     };
 
+    const deleteList = async (list) => {
+        try {
+            const deletedList = { ...list };
+            deletedList.Deleted = true;
+            deletedList.DeletedAt = new Date().toISOString();
+            await storeData(deletedList.Id, deletedList);
+            await fetchLists();
+        } catch (error) {
+            console.log('Error deleting list:', error);
+            Alert.alert(getText('errorDeletingList'));
+        }
+    };
+
+    const confirmDeleteList = (list) => {
+        Alert.alert(
+            getText('deleteListConfirmTitle'),
+            getText('deleteListConfirmMessage', { 0: list.Name }),
+            [
+                { text: getText('cancel'), style: "cancel" },
+                { text: getText('moveToTrash'), onPress: () => deleteList(list), style: "destructive" }
+            ]
+        );
+    };
+
     const renderEmptyState = () => (
         <View style={styles.emptyState}>
             <View style={[styles.emptyIconContainer, { backgroundColor: colors.primary + '15' }]}>
@@ -328,6 +367,8 @@ const HomeScreen = ({ navigation }) => {
         </View>
     );
 
+    const canCreateList = listName.trim().length > 0;
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <FlatList
@@ -352,17 +393,9 @@ const HomeScreen = ({ navigation }) => {
                                     </Text>
                                     <TouchableOpacity
                                         style={styles.deleteButton}
-                                        onPress={async () => {
-                                            try {
-                                                const deletedList = { ...list };
-                                                deletedList.Deleted = true;
-                                                deletedList.DeletedAt = new Date().toISOString();
-                                                await storeData(deletedList.Id, deletedList);
-                                                await fetchLists();
-                                            } catch (error) {
-                                                console.log('Error deleting list:', error);
-                                            }
-                                        }}
+                                        onPress={() => confirmDeleteList(list)}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={`${getText('delete')}: ${list.Name}`}
                                     >
                                         <Icon name="delete" size={20} color="#e22" />
                                     </TouchableOpacity>
@@ -400,21 +433,48 @@ const HomeScreen = ({ navigation }) => {
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                     <View style={styles.centeredView}>
                         <View style={[styles.modalView, { backgroundColor: colors.surface }]}>
-                            <Text style={{ color: colors.textSecondary }}>{getText('listNamePlaceholder')}</Text>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>
+                                {getText('createListModalTitle')}
+                            </Text>
+                            <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                                {getText('createListModalSubtitle')}
+                            </Text>
                             <TextInput
+                                ref={listNameInputRef}
                                 style={[styles.textInput, { borderColor: colors.border, color: colors.text }]}
                                 onChangeText={setListName}
                                 value={listName}
-                                placeholder={getText('listNamePlaceholder')}
+                                placeholder={getText('listNameExample')}
                                 placeholderTextColor={colors.textSecondary}
+                                returnKeyType="done"
+                                onSubmitEditing={() => createList()}
+                                maxLength={50}
+                                accessibilityLabel={getText('listNamePlaceholder')}
                             />
-                            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                                <TouchableOpacity onPress={closeModal} title={getText('close')}>
-                                    <Icon name="closecircleo" size={50} color="#E15141"></Icon>
+                            <View style={styles.modalActions}>
+                                <TouchableOpacity
+                                    style={[styles.secondaryModalButton, { borderColor: colors.border }]}
+                                    onPress={closeModal}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={getText('cancel')}
+                                >
+                                    <Icon name="close" size={18} color={colors.text} />
+                                    <Text style={[styles.secondaryModalButtonText, { color: colors.text }]}>
+                                        {getText('cancel')}
+                                    </Text>
                                 </TouchableOpacity>
-                                <View style={{ marginRight: 100 }}></View>
-                                <TouchableOpacity onPress={() => createList()} title={getText('createList')}>
-                                    <Icon name="checkcircleo" size={50} color="#4151E1"></Icon>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.primaryModalButton,
+                                        { backgroundColor: colors.primary, opacity: canCreateList ? 1 : 0.5 }
+                                    ]}
+                                    onPress={() => createList()}
+                                    disabled={!canCreateList}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={getText('createList')}
+                                >
+                                    <Icon name="check" size={18} color="#fff" />
+                                    <Text style={styles.primaryModalButtonText}>{getText('createList')}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -517,9 +577,9 @@ const styles = StyleSheet.create({
     },
     modalView: {
         margin: 20,
-        borderRadius: 40,
-        padding: 35,
-        alignItems: "center",
+        borderRadius: 16,
+        padding: 24,
+        alignItems: "stretch",
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -527,15 +587,66 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
-        elevation: 5
+        elevation: 5,
+        width: "88%",
+        maxWidth: 360,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        textAlign: "center",
+        marginBottom: 8,
+    },
+    modalSubtitle: {
+        fontSize: 14,
+        lineHeight: 20,
+        textAlign: "center",
+        marginBottom: 16,
     },
     textInput: {
-        height: 40,
-        width: 200,
-        margin: 12,
+        minHeight: 46,
+        width: "100%",
+        marginBottom: 18,
         borderWidth: 1,
-        padding: 10,
-        borderRadius: 15,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderRadius: 8,
+        fontSize: 16,
+    },
+    modalActions: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 12,
+    },
+    secondaryModalButton: {
+        flex: 1,
+        minHeight: 46,
+        borderWidth: 1,
+        borderRadius: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 12,
+    },
+    primaryModalButton: {
+        flex: 1,
+        minHeight: 46,
+        borderRadius: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 12,
+    },
+    secondaryModalButtonText: {
+        fontSize: 14,
+        fontWeight: "700",
+        marginLeft: 8,
+    },
+    primaryModalButtonText: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "700",
+        marginLeft: 8,
     },
     listItem: {
         padding: 16,

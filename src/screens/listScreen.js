@@ -6,13 +6,22 @@ import { useFocusEffect } from '@react-navigation/native';
 import Item from "../components/Item";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
-import { TestIds, InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
+import { TestIds, InterstitialAd, AdEventType } from "../utils/mobileAds";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
 
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-9404218606533420/6418289792';
+
+const EMPTY_LIST_SUGGESTIONS = [
+    'templateItemRice',
+    'templateItemBeans',
+    'templateItemMilk',
+    'templateItemBread',
+    'templateItemEggs',
+    'templateItemFruit'
+];
 
 const storeData = async (key, value) => {
     try {
@@ -35,7 +44,7 @@ const getData = async (key) => {
 }
 
 
-const ListScreen = ({ route }) => {
+const ListScreen = ({ route, navigation }) => {
     const { colors } = useTheme();
     const { getText } = useLanguage();
     const { name, id, date } = route.params;
@@ -59,6 +68,7 @@ const ListScreen = ({ route }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [dataLoaded, setDataLoaded] = useState(false);
     const adLoadedRef = useRef(false);
+    const flatList = useRef();
 
     //percorrer a lista atual para verificar os items que estão com o check true
     const checkItems = () => {
@@ -172,26 +182,28 @@ const ListScreen = ({ route }) => {
 
 
 
-    const addItem = async () => {
-        if (item === "") {
+    const addItemToList = async (itemName, itemPrice = '0', itemQuantity = '1', shouldClearInputs = false) => {
+        const normalizedItemName = itemName?.trim();
+
+        if (!normalizedItemName) {
             Alert.alert(getText('validNameRequired'));
-            return;
+            return false;
         }
 
-        if (price && !isValidCurrency(price)) {
+        if (itemPrice && !isValidCurrency(itemPrice)) {
             Alert.alert(getText('invalidPrice'), getText('invalidPriceMessage'));
-            return;
+            return false;
         }
 
-        if (quantity && !isValidQuantity(quantity)) {
+        if (itemQuantity && !isValidQuantity(itemQuantity)) {
             Alert.alert(getText('invalidQuantity'), getText('invalidQuantityMessage'));
-            return;
+            return false;
         }
 
-        const itemPrice = price || '0';
-        const itemQuantity = quantity || '1';
+        const normalizedPrice = itemPrice || '0';
+        const normalizedQuantity = itemQuantity || '1';
 
-        const newItem = new Item(item, itemPrice, itemQuantity);
+        const newItem = new Item(normalizedItemName, normalizedPrice, normalizedQuantity);
         const itemTotalCents = multiplyCurrency(newItem.priceCents, newItem.quantity);
 
         const newList = { ...list };
@@ -200,12 +212,55 @@ const ListScreen = ({ route }) => {
         newList.Items.push(newItem);
 
         setList(newList);
-        setItem("");
-        setPrice("");
-        setQuantity("");
+        if (shouldClearInputs) {
+            setItem("");
+            setPrice("");
+            setQuantity("");
+        }
         await storeData(id, newList);
-        flatList.current?.scrollToEnd();
+        return true;
     }
+
+    const addItem = async () => {
+        const itemAdded = await addItemToList(item, price, quantity, true);
+        if (itemAdded) {
+            flatList.current?.scrollToEnd();
+        }
+    }
+
+    const addSuggestedItem = async (itemKey) => {
+        const itemAdded = await addItemToList(getText(itemKey));
+        if (itemAdded) {
+            flatList.current?.scrollToEnd();
+        }
+    }
+
+    const renderEmptyList = () => (
+        <View style={styles.listEmptyContainer}>
+            <Icon name="filetext1" size={68} color={colors.textTertiary}></Icon>
+            <Text style={[styles.listEmptyTitle, { color: colors.text }]}>{getText('listEmptyTitle')}</Text>
+            <Text style={[styles.listEmptySubtitle, { color: colors.textSecondary }]}>
+                {getText('listEmptySubtitle')}
+            </Text>
+            <Text style={[styles.quickSuggestionsTitle, { color: colors.text }]}>{getText('quickAddSuggestions')}</Text>
+            <View style={styles.quickSuggestionsGrid}>
+                {EMPTY_LIST_SUGGESTIONS.map((itemKey) => (
+                    <TouchableOpacity
+                        key={itemKey}
+                        style={[styles.quickSuggestionChip, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+                        onPress={() => addSuggestedItem(itemKey)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${getText('addSuggestedItem')}: ${getText(itemKey)}`}
+                    >
+                        <Icon name="pluscircleo" size={16} color={colors.primary} />
+                        <Text style={[styles.quickSuggestionText, { color: colors.text }]} numberOfLines={1}>
+                            {getText(itemKey)}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        </View>
+    );
 
     // Função para ordenar itens
     const getSortedItems = () => {
@@ -320,10 +375,12 @@ const ListScreen = ({ route }) => {
         }
     }
 
-
-    //console.log(list);
-    const flatList = useRef();
-
+    const listItemCount = list?.Items?.length || 0;
+    const checkedItemCount = list?.Items?.filter((listItem) => listItem.checked).length || 0;
+    const listDate = list?.Date || date || '';
+    const listMeta = listDate
+        ? `${listItemCount} ${getText('items')} - ${listDate}`
+        : `${listItemCount} ${getText('items')}`;
 
     return (
         <KeyboardAvoidingView
@@ -342,23 +399,69 @@ const ListScreen = ({ route }) => {
 
                 {!isLoading && (
                     <>
-                        {/* Header com botão de ordenação */}
+                        {/* Header contextual da lista */}
                         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-                            <View style={styles.headerButtons}>
+                            <View style={styles.headerTopRow}>
                                 <TouchableOpacity
-                                    style={[styles.sortButton, { backgroundColor: colors.primary }]}
-                                    onPress={() => setSortModalVisible(true)}
+                                    style={[styles.backButton, { borderColor: colors.border }]}
+                                    onPress={() => navigation.goBack()}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={getText('backToLists')}
                                 >
-                                    <Icon name="filter" size={20} color="#fff" />
-                                    <Text style={styles.sortButtonText}>{getText('sortBy')}</Text>
+                                    <Icon name="arrowleft" size={22} color={colors.text} />
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.shareButton, { backgroundColor: colors.success }]}
-                                    onPress={shareList}
-                                >
-                                    <Icon name="sharealt" size={20} color="#fff" />
-                                    <Text style={styles.shareButtonText}>{getText('shareList')}</Text>
-                                </TouchableOpacity>
+                                <View style={styles.headerTitleGroup}>
+                                    <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
+                                        {list?.Name || name}
+                                    </Text>
+                                    <Text style={[styles.headerMeta, { color: colors.textSecondary }]} numberOfLines={1}>
+                                        {listMeta}
+                                    </Text>
+                                </View>
+                                <View style={styles.headerActions}>
+                                    <TouchableOpacity
+                                        style={[styles.iconActionButton, { backgroundColor: colors.primary }]}
+                                        onPress={() => setSortModalVisible(true)}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={getText('sortBy')}
+                                    >
+                                        <Icon name="filter" size={19} color="#fff" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.iconActionButton, { backgroundColor: colors.success }]}
+                                        onPress={shareList}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={getText('shareList')}
+                                    >
+                                        <Icon name="sharealt" size={19} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            <View style={styles.summaryRow}>
+                                <View style={[styles.summaryTile, { backgroundColor: colors.background, borderColor: colors.borderLight }]}>
+                                    <Text style={[styles.summaryLabel, { color: colors.textTertiary }]} numberOfLines={1}>
+                                        {getText('totalPrice')}
+                                    </Text>
+                                    <Text style={[styles.summaryValue, { color: colors.success }]} numberOfLines={1}>
+                                        {formatCurrency(list.TotalPrice || 0)}
+                                    </Text>
+                                </View>
+                                <View style={[styles.summaryTile, { backgroundColor: colors.background, borderColor: colors.borderLight }]}>
+                                    <Text style={[styles.summaryLabel, { color: colors.textTertiary }]} numberOfLines={1}>
+                                        {getText('totalUnchecked')}
+                                    </Text>
+                                    <Text style={[styles.summaryValue, { color: colors.text }]} numberOfLines={1}>
+                                        {formatCurrency(list.TotalUncheckedPrice || 0)}
+                                    </Text>
+                                </View>
+                                <View style={[styles.summaryTile, { backgroundColor: colors.background, borderColor: colors.borderLight }]}>
+                                    <Text style={[styles.summaryLabel, { color: colors.textTertiary }]} numberOfLines={1}>
+                                        {getText('totalChecked')}
+                                    </Text>
+                                    <Text style={[styles.summaryValue, { color: colors.primary }]} numberOfLines={1}>
+                                        {checkedItemCount}/{listItemCount}
+                                    </Text>
+                                </View>
                             </View>
                         </View>
 
@@ -449,13 +552,7 @@ const ListScreen = ({ route }) => {
                                         </Text>
                                     </View> : null
                             )}
-                            ListEmptyComponent={() => (
-                                <View style={{ alignItems: "center", justifyContent: "center", margin: 100 }}>
-                                    <Icon name="filetext1" size={80} color={colors.textTertiary}></Icon>
-                                    <Text style={{ color: colors.textTertiary, marginTop: 20 }} >{getText('emptyListMessage')}</Text>
-                                </View>
-                            )
-                            }
+                            ListEmptyComponent={renderEmptyList}
                         />
                         <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
                             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-evenly" }}>
@@ -540,40 +637,72 @@ const ListScreen = ({ route }) => {
 }
 const styles = StyleSheet.create({
     header: {
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+        paddingHorizontal: 14,
+        paddingTop: 10,
+        paddingBottom: 12,
         borderBottomWidth: 1,
-        alignItems: 'flex-end',
     },
-    headerButtons: {
-        flexDirection: 'row',
-        gap: 10,
-    },
-    sortButton: {
+    headerTopRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        borderRadius: 20,
     },
-    sortButtonText: {
-        color: '#fff',
-        marginLeft: 8,
-        fontSize: 14,
-        fontWeight: '600',
+    backButton: {
+        width: 42,
+        height: 42,
+        borderWidth: 1,
+        borderRadius: 21,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
     },
-    shareButton: {
+    headerTitleGroup: {
+        flex: 1,
+        minWidth: 0,
+    },
+    headerTitle: {
+        fontSize: 19,
+        fontWeight: '700',
+        lineHeight: 24,
+    },
+    headerMeta: {
+        fontSize: 12,
+        fontWeight: '500',
+        marginTop: 2,
+    },
+    headerActions: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        borderRadius: 20,
+        gap: 8,
+        marginLeft: 10,
     },
-    shareButtonText: {
-        color: '#fff',
-        marginLeft: 8,
-        fontSize: 14,
+    iconActionButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    summaryRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 12,
+    },
+    summaryTile: {
+        flex: 1,
+        minWidth: 0,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+    },
+    summaryLabel: {
+        fontSize: 11,
         fontWeight: '600',
+        marginBottom: 3,
+    },
+    summaryValue: {
+        fontSize: 14,
+        fontWeight: '800',
     },
     inputContainer: {
         paddingVertical: 10,
@@ -754,6 +883,55 @@ const styles = StyleSheet.create({
         marginTop: 20,
         fontSize: 16,
         fontWeight: '600',
+    },
+    listEmptyContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 24,
+        paddingTop: 48,
+        paddingBottom: 120,
+    },
+    listEmptyTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        marginTop: 18,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    listEmptySubtitle: {
+        fontSize: 14,
+        lineHeight: 20,
+        textAlign: 'center',
+        marginBottom: 20,
+        maxWidth: 310,
+    },
+    quickSuggestionsTitle: {
+        alignSelf: 'flex-start',
+        fontSize: 15,
+        fontWeight: '700',
+        marginBottom: 10,
+    },
+    quickSuggestionsGrid: {
+        width: '100%',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+    },
+    quickSuggestionChip: {
+        width: '48%',
+        minHeight: 44,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    quickSuggestionText: {
+        flex: 1,
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 8,
     },
 })
 

@@ -1,6 +1,43 @@
 # Competidores e referências — MarketList
 
-Atualizado em 2026-07-02.
+Atualizado em 2026-07-13.
+
+## Notas da execução de 2026-07-13
+
+- [AnyList](https://www.anylist.com/) mantém a promessa de compras sem estresse com listas compartilhadas, sugestões enquanto digita, categorias automáticas, receitas e meal planning. Oportunidade: MarketList deve evoluir de sugestões estáticas para histórico local antes de categorias completas.
+- [Listonic](https://listonic.com/) destaca lista inteligente com orçamento, sugestões por histórico, ordenação por corredores/A-Z/custom, compartilhamento sem conta obrigatória e assistente de IA. Oportunidade: reforçar orçamento visível e histórico explicável sem antecipar IA.
+- [Out of Milk](https://outofmilk.com/) combina lista compartilhada, histórico, barcode, carrinho, pantry e templates públicos por ocasião. Oportunidade: transformar templates do MarketList em inventário público/SEO no futuro.
+- [OurGroceries](https://www.ourgroceries.com/) vende confiança familiar com sync imediato, fotos, notas, quantidades, barcodes, autoagrupamento por corredores e receitas. Oportunidade: fortalecer contexto e confiança local antes de tentar sync.
+- [Bring!](https://www.getbring.com/en/home) mistura listas compartilhadas, ofertas locais, receitas sazonais e uso por família. Oportunidade: ofertas só devem entrar depois de ativação e sempre rotuladas.
+- [Cozi Shopping Lists](https://www.cozi.com/shopping-lists/) trata listas como rotina familiar, com listas por loja, receita para lista, uso offline e sync. Oportunidade: listas por ocasião/loja e header contextual ajudam MarketList a parecer mais confiável sem aumentar complexidade.
+- [GroceryGenius via People](https://people.com/virginia-teen-creates-free-website-that-automatically-turns-pantry-inventory-into-recipes-and-donation-alerts-exclusive-12015844) sinaliza interesse atual em pantry + IA + validade + lista automática. Oportunidade: IA deve ser atalho opcional futuro; a base do MarketList ainda deve ser lista rápida, orçamento e reuso.
+
+## Notas da execução de 2026-07-10
+
+- [AnyList](https://www.anylist.com/) continua posicionando rapidez e organização: sugere itens comuns enquanto o usuário digita e agrupa automaticamente por categoria. Oportunidade: MarketList pode evoluir das sugestões estáticas atuais para histórico/favoritos locais antes de categorias completas.
+- [Listonic](https://listonic.com/) comunica lista inteligente com orçamento, sugestões personalizadas, histórico, ordenação por corredores/A-Z/custom e assistente de IA. Oportunidade: reforçar orçamento e histórico local, sem antecipar IA antes de dados e confiança.
+- [OurGroceries](https://www.ourgroceries.com/) foca household sync, fotos/notas/quantidades/barcodes e autoagrupamento por corredores. Oportunidade: no curto prazo, melhorar contexto e navegação da lista; sync deve continuar como aposta posterior.
+- [Bring!](https://www.getbring.com/en/home) combina listas compartilhadas, ofertas locais e receitas sazonais. Oportunidade: ofertas só devem entrar com rotulagem clara; para agora, templates e histórico resolvem ativação com menor ruído.
+- [Cozi Shopping Lists](https://www.cozi.com/shopping-lists/) organiza listas por família, loja, receitas e modo offline. Oportunidade: header contextual e listas por ocasião/loja podem tornar a navegação do MarketList mais confiável.
+- [MealBoard via TechRadar](https://www.techradar.com/computing/websites-apps/mealboard) reforça a tendência de planejamento de refeições, pantry e lista gerada por receitas. Oportunidade: transformar templates do MarketList em "mini meal planning" leve, sem virar app complexo de receitas.
+
+## Notas da execução de 2026-07-08
+
+- [AnyList](https://www.anylist.com/) destaca sugestões de itens comuns enquanto o usuário digita e agrupamento automático por categoria. Oportunidade: MarketList pode começar com sugestões estáticas no estado vazio antes de investir em autocomplete completo.
+- [Listonic](https://listonic.com/) comunica orçamento, sugestões personalizadas, histórico de compras, ordenação por corredores/A-Z/custom e criação sem conta obrigatória. Oportunidade: sugestões rápidas e histórico local são a rota de menor risco para acelerar listas recorrentes.
+- [Out of Milk](https://outofmilk.com/) reforça "Add Items from History", scanner, listas compartilhadas, carrinho e templates públicos por ocasião. Oportunidade: combinar sugestões rápidas dentro do app com inventário de templates em conteúdo/SEO no futuro.
+- [OurGroceries](https://www.ourgroceries.com/) vende confiança doméstica com listas compartilhadas, categorização, fotos e atualização em tempo real. Oportunidade: MarketList deve proteger a experiência local e melhorar velocidade de adição antes de tentar sync.
+- [Bring!](https://www.getbring.com/en/home) posiciona lista compartilhada, ofertas locais e receitas sazonais para casa/família. Oportunidade: inspiração/ofertas podem vir depois; a ativação inicial precisa continuar simples e sem ruído promocional.
+
+## Notas da execução de 2026-07-03
+
+- [AnyList](https://www.anylist.com/) continua forte em listas organizadas: sugere itens comuns enquanto o usuário digita e agrupa por categoria. Oportunidade: autocomplete e categorias simples podem vir depois de consolidar templates.
+- [Listonic](https://listonic.com/) reforça três mensagens úteis para o MarketList: controle de orçamento, sugestões por histórico e ordenação por corredores/A-Z/custom. Oportunidade: a próxima grande alavanca de retenção é histórico de itens frequentes.
+- [Bring!](https://www.getbring.com/en/home) comunica lista compartilhada, ofertas locais e receitas sazonais em uma proposta de casa/família. Oportunidade: MarketList deve manter a lista neutra e simples antes de colocar ofertas.
+- [Out of Milk](https://outofmilk.com/) usa templates públicos para ocasiões como mudança, limpeza, churrasco, snacks e dietas. Oportunidade: transformar modelos do app em inventário de conteúdo/SEO no futuro.
+- [OurGroceries](https://www.ourgroceries.com/) vende confiança doméstica: todos veem atualizações, há fotos/notas/quantidades/barcodes e agrupamento automático por corredores. Oportunidade: antes de sync, fortalecer confiança local com confirmação de exclusão e recuperação clara.
+- [Cozi Shopping Lists](https://www.cozi.com/shopping-lists/) trata listas como rotina familiar, com acesso offline, listas por loja e receita para lista. Oportunidade: "listas por loja" e seções manuais são alternativas de médio prazo sem exigir catálogo.
+- [Flipp](https://flipp.com/) conecta lista a flyers, cupons e melhores ofertas perto do usuário. Oportunidade: qualquer monetização por oferta precisa ser rotulada e opcional para não comprometer confiança.
 
 ## Notas da execução de 2026-07-02
 

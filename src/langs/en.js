@@ -21,8 +21,14 @@ const en = {
     errorGeneratingId: "Error generating list ID",
     close: "Close",
     createList: "Create List",
+    createListModalTitle: "Name your list",
+    createListModalSubtitle: "Use a clear name so you can find this shopping trip later.",
+    listNameExample: "Example: Weekly groceries",
     items: "items",
     errorDeletingList: "Error deleting list",
+    deleteListConfirmTitle: "Move list to trash?",
+    deleteListConfirmMessage: "Do you want to move \"{{0}}\" to the trash? You can restore it for 7 days.",
+    moveToTrash: "Move to Trash",
     homeEmptyTitle: "Create your first list",
     homeEmptySubtitle: "Start from a ready-made template or create an empty list.",
     homeTemplateSectionTitle: "Quick templates",
@@ -57,6 +63,7 @@ const en = {
     templateItemDisinfectant: "Disinfectant",
 
     // ListScreen
+    backToLists: "Back to lists",
     validNameRequired: "The item needs a valid name.",
     invalidPrice: "Invalid price",
     invalidPriceMessage: "Please enter a valid price.",
@@ -69,6 +76,10 @@ const en = {
     totalUnchecked: "Total unchecked",
     totalPrice: "Total price",
     emptyListMessage: "Your list is empty.",
+    listEmptyTitle: "Start with one item",
+    listEmptySubtitle: "Tap a suggestion or use the fields below to build your list.",
+    quickAddSuggestions: "Quick suggestions",
+    addSuggestedItem: "Add suggested item",
 
     // DeleteScreen
     deletedLists: "Deleted Lists",
