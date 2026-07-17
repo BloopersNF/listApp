@@ -10,6 +10,7 @@ import { TestIds, InterstitialAd, AdEventType } from "../utils/mobileAds";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { addCurrency, subtractCurrency, multiplyCurrency, formatCurrency, isValidCurrency, isValidQuantity } from "../utils/currency";
+import { getStoredList, getStoredListEntries, normalizeItemName } from "../utils/listStorage";
 
 
 const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : 'ca-app-pub-9404218606533420/6418289792';
@@ -23,6 +24,8 @@ const EMPTY_LIST_SUGGESTIONS = [
     'templateItemFruit'
 ];
 
+const MAX_FREQUENT_ITEM_SUGGESTIONS = 6;
+
 const storeData = async (key, value) => {
     try {
         const jsonValue = JSON.stringify(value)
@@ -33,14 +36,41 @@ const storeData = async (key, value) => {
     }
 }
 
-const getData = async (key) => {
+const getFrequentItemSuggestions = async (currentListId) => {
+    const itemFrequency = new Map();
+
     try {
-        const jsonValue = await AsyncStorage.getItem(key)
-        return jsonValue != null ? JSON.parse(jsonValue) : null;
+        const entries = await getStoredListEntries({
+            includeDeleted: false,
+            excludeKey: currentListId,
+            logPrefix: 'Ignoring non-list AsyncStorage key while loading frequent items'
+        });
+
+        for (const { list: storedList } of entries) {
+            storedList.Items.forEach((storedItem) => {
+                if (!storedItem || typeof storedItem.name !== 'string') {
+                    return;
+                }
+
+                const itemName = storedItem.name.trim();
+                if (!itemName) {
+                    return;
+                }
+
+                const normalizedName = normalizeItemName(itemName);
+                const existingItem = itemFrequency.get(normalizedName) || { name: itemName, count: 0 };
+                existingItem.count += 1;
+                itemFrequency.set(normalizedName, existingItem);
+            });
+        }
+    } catch (error) {
+        console.log('Error loading frequent item suggestions:', error);
     }
-    catch (e) {
-        console.log(e);
-    }
+
+    return Array.from(itemFrequency.values())
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+        .slice(0, MAX_FREQUENT_ITEM_SUGGESTIONS)
+        .map((itemSuggestion) => itemSuggestion.name);
 }
 
 
@@ -50,7 +80,7 @@ const ListScreen = ({ route, navigation }) => {
     const { name, id, date } = route.params;
     const renderListData = async () => {
         try {
-            const listData = await getData(id);
+            const listData = await getStoredList(id, { logPrefix: 'Error loading list screen data' });
             return listData;
         }
         catch (e) {
@@ -67,6 +97,7 @@ const ListScreen = ({ route, navigation }) => {
     const [sortBy, setSortBy] = useState('addition'); // 'addition', 'alphabetical', 'status'
     const [isLoading, setIsLoading] = useState(true);
     const [dataLoaded, setDataLoaded] = useState(false);
+    const [frequentItemSuggestions, setFrequentItemSuggestions] = useState([]);
     const adLoadedRef = useRef(false);
     const flatList = useRef();
 
@@ -91,6 +122,9 @@ const ListScreen = ({ route, navigation }) => {
 
             // Carrega preferência de ordenação
             await loadSortPreference();
+
+            const suggestions = await getFrequentItemSuggestions(id);
+            setFrequentItemSuggestions(suggestions);
 
             // Marca que os dados foram carregados
             setDataLoaded(true);
@@ -235,6 +269,23 @@ const ListScreen = ({ route, navigation }) => {
         }
     }
 
+    const addFrequentItem = async (itemName) => {
+        const itemAdded = await addItemToList(itemName);
+        if (itemAdded) {
+            flatList.current?.scrollToEnd();
+        }
+    }
+
+    const currentItemNames = new Set(
+        (list?.Items || [])
+            .filter((listItem) => typeof listItem?.name === 'string')
+            .map((listItem) => normalizeItemName(listItem.name))
+    );
+
+    const visibleFrequentItemSuggestions = frequentItemSuggestions
+        .filter((itemName) => !currentItemNames.has(normalizeItemName(itemName)))
+        .slice(0, MAX_FREQUENT_ITEM_SUGGESTIONS);
+
     const renderEmptyList = () => (
         <View style={styles.listEmptyContainer}>
             <Icon name="filetext1" size={68} color={colors.textTertiary}></Icon>
@@ -242,6 +293,32 @@ const ListScreen = ({ route, navigation }) => {
             <Text style={[styles.listEmptySubtitle, { color: colors.textSecondary }]}>
                 {getText('listEmptySubtitle')}
             </Text>
+            {visibleFrequentItemSuggestions.length > 0 && (
+                <View style={styles.frequentSuggestionSection}>
+                    <Text style={[styles.frequentSuggestionsTitle, { color: colors.text }]}>
+                        {getText('frequentItemSuggestionsTitle')}
+                    </Text>
+                    <Text style={[styles.frequentSuggestionsSubtitle, { color: colors.textSecondary }]}>
+                        {getText('frequentItemSuggestionsSubtitle')}
+                    </Text>
+                    <View style={styles.quickSuggestionsGrid}>
+                        {visibleFrequentItemSuggestions.map((frequentItem) => (
+                            <TouchableOpacity
+                                key={frequentItem}
+                                style={[styles.quickSuggestionChip, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+                                onPress={() => addFrequentItem(frequentItem)}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${getText('addFrequentItem')}: ${frequentItem}`}
+                            >
+                                <Icon name="pluscircleo" size={16} color={colors.primary} />
+                                <Text style={[styles.quickSuggestionText, { color: colors.text }]} numberOfLines={1}>
+                                    {frequentItem}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+            )}
             <Text style={[styles.quickSuggestionsTitle, { color: colors.text }]}>{getText('quickAddSuggestions')}</Text>
             <View style={styles.quickSuggestionsGrid}>
                 {EMPTY_LIST_SUGGESTIONS.map((itemKey) => (
@@ -474,10 +551,16 @@ const ListScreen = ({ route, navigation }) => {
                             contentContainerStyle={{ paddingBottom: 80 }}
                             renderItem={({ item, index }) => (
                                 <View style={styles.itemContainer}>
-                                    <TouchableOpacity style={styles.checkButtonContainer} onPress={() => {
-                                        const originalIndex = list.Items.findIndex(listItem => listItem === item);
-                                        priceCheckItem(originalIndex);
-                                    }}>
+                                    <TouchableOpacity
+                                        style={styles.checkButtonContainer}
+                                        onPress={() => {
+                                            const originalIndex = list.Items.findIndex(listItem => listItem === item);
+                                            priceCheckItem(originalIndex);
+                                        }}
+                                        accessibilityRole="checkbox"
+                                        accessibilityState={{ checked: item.checked }}
+                                        accessibilityLabel={getText(item.checked ? 'checkedItemAccessibilityLabel' : 'uncheckedItemAccessibilityLabel', { 0: item.name })}
+                                    >
                                         {item.checked ?
                                             <Icon name="checkcircle" size={30} color="#4151E1"></Icon> :
                                             <View style={[styles.checkCircle, { borderColor: colors.border }]}></View>}
@@ -529,6 +612,8 @@ const ListScreen = ({ route, navigation }) => {
                                                 const originalIndex = list.Items.findIndex(listItem => listItem === item);
                                                 removeItem(originalIndex);
                                             }}
+                                            accessibilityRole="button"
+                                            accessibilityLabel={getText('deleteItemAccessibilityLabel', { 0: item.name })}
                                         >
                                             <Icon name="delete" size={20} color="#f00" />
                                         </TouchableOpacity>
@@ -579,7 +664,11 @@ const ListScreen = ({ route, navigation }) => {
                                     style={[styles.itemQuantity, { borderColor: colors.border, backgroundColor: colors.surface, color: colors.text }]}
                                     keyboardType="numeric"
                                 />
-                                <TouchableOpacity onPress={() => { addItem() }}>
+                                <TouchableOpacity
+                                    onPress={() => { addItem() }}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={getText('addItemAccessibilityLabel')}
+                                >
                                     <Icon name="pluscircle" size={30} color="#2e2" />
                                 </TouchableOpacity>
                             </View>
@@ -601,6 +690,9 @@ const ListScreen = ({ route, navigation }) => {
                             <TouchableOpacity
                                 style={[styles.sortOption, sortBy === 'addition' && { backgroundColor: colors.primary + '20' }]}
                                 onPress={() => handleSortChange('addition')}
+                                accessibilityRole="button"
+                                accessibilityLabel={getText('sortByAddition')}
+                                accessibilityState={{ selected: sortBy === 'addition' }}
                             >
                                 <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAddition')}</Text>
                                 {sortBy === 'addition' && <Icon name="check" size={20} color={colors.primary} />}
@@ -609,6 +701,9 @@ const ListScreen = ({ route, navigation }) => {
                             <TouchableOpacity
                                 style={[styles.sortOption, sortBy === 'alphabetical' && { backgroundColor: colors.primary + '20' }]}
                                 onPress={() => handleSortChange('alphabetical')}
+                                accessibilityRole="button"
+                                accessibilityLabel={getText('sortByAlphabetical')}
+                                accessibilityState={{ selected: sortBy === 'alphabetical' }}
                             >
                                 <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByAlphabetical')}</Text>
                                 {sortBy === 'alphabetical' && <Icon name="check" size={20} color={colors.primary} />}
@@ -617,6 +712,9 @@ const ListScreen = ({ route, navigation }) => {
                             <TouchableOpacity
                                 style={[styles.sortOption, sortBy === 'status' && { backgroundColor: colors.primary + '20' }]}
                                 onPress={() => handleSortChange('status')}
+                                accessibilityRole="button"
+                                accessibilityLabel={getText('sortByStatus')}
+                                accessibilityState={{ selected: sortBy === 'status' }}
                             >
                                 <Text style={[styles.sortOptionText, { color: colors.text }]}>{getText('sortByStatus')}</Text>
                                 {sortBy === 'status' && <Icon name="check" size={20} color={colors.primary} />}
@@ -625,6 +723,8 @@ const ListScreen = ({ route, navigation }) => {
                             <TouchableOpacity
                                 style={[styles.closeModalButton, { backgroundColor: colors.textTertiary }]}
                                 onPress={() => setSortModalVisible(false)}
+                                accessibilityRole="button"
+                                accessibilityLabel={getText('close')}
                             >
                                 <Text style={styles.closeModalButtonText}>{getText('close')}</Text>
                             </TouchableOpacity>
@@ -904,6 +1004,22 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 20,
         maxWidth: 310,
+    },
+    frequentSuggestionSection: {
+        width: '100%',
+        marginBottom: 18,
+    },
+    frequentSuggestionsTitle: {
+        alignSelf: 'flex-start',
+        fontSize: 15,
+        fontWeight: '700',
+        marginBottom: 4,
+    },
+    frequentSuggestionsSubtitle: {
+        alignSelf: 'flex-start',
+        fontSize: 12,
+        lineHeight: 17,
+        marginBottom: 10,
     },
     quickSuggestionsTitle: {
         alignSelf: 'flex-start',

@@ -1,6 +1,6 @@
 # Rascunho de release semanal — MarketList
 
-Atualizado em 2026-07-13.
+Atualizado em 2026-07-17.
 
 ## Melhorias feitas
 
@@ -17,12 +17,18 @@ Atualizado em 2026-07-13.
 - Campo de item passou a rejeitar nomes compostos apenas por espaços.
 - Modal de criação manual de lista ganhou título, texto de apoio, placeholder com exemplo, foco automático no campo e botões textuais de cancelar/criar.
 - Tela de lista ganhou header contextual com voltar, nome da lista, data, contagem de itens, resumo de orçamento e ações compactas de ordenar/compartilhar.
+- Tela de lista vazia agora pode sugerir itens frequentes a partir de outras listas salvas no próprio aparelho.
+- Loading da tela de lista passou a ter tradução explícita em todos os idiomas suportados.
+- A navegação inferior agora mostra rótulos localizados para Lixeira, Listas e Ajustes.
+- Os controles principais da tela de lista agora têm labels/roles de acessibilidade para marcar item, deletar item, adicionar item e escolher ordenação.
+- Home, Lixeira e sugestões frequentes agora usam uma camada compartilhada de leitura segura de listas salvas no aparelho.
 - Export web voltou a passar no estado atual com `@expo/metro-runtime@~5.0.5` instalado.
 
 ## Bugs corrigidos
 
 - A tela de lixeira podia abortar ao tentar interpretar `selectedLanguage`, `listSortPreference` ou outros valores não-lista como JSON de lista.
 - A Home podia apagar `languageMode` durante a limpeza de dados corrompidos, fazendo o modo de idioma voltar ao padrão.
+- A Home deixou de executar limpeza automatica destrutiva de registros desconhecidos; dados invalidos agora sao filtrados durante a leitura.
 - Era possível adicionar item sem nome real usando apenas espaços.
 - Export web falhava por dependência ausente de runtime do Metro; o bundle web passou em 2026-07-10.
 
@@ -37,6 +43,9 @@ Atualizado em 2026-07-13.
 - Criar uma lista vazia ficou menos travado: o usuário recebe sugestões acionáveis para adicionar o primeiro item.
 - Criar uma lista manual ficou mais claro: o modal orienta o nome, foca o campo automaticamente e troca ícones isolados por CTAs com texto.
 - Abrir uma lista ficou mais orientado: o usuário vê onde está, consegue voltar claramente e acompanha total, pendente e progresso no topo.
+- Compras recorrentes ficaram mais rápidas: ao criar uma lista vazia, o app pode sugerir itens já usados em listas anteriores, sem exigir conta, internet ou sincronização.
+- A navegação ficou mais clara para novos usuários: as abas deixaram de depender apenas de ícones.
+- A tela de lista ficou mais acessível: leitores de tela agora conseguem identificar os controles principais de item e o estado selecionado da ordenação.
 
 ## Melhorias técnicas
 
@@ -54,6 +63,15 @@ Atualizado em 2026-07-13.
 - Novas strings do modal foram adicionadas em EN, PT-BR, ES, FR e CN.
 - `ListScreen` passou a receber `navigation`, usar botão de voltar próprio e renderizar resumo derivado de `Items`, `TotalPrice`, `TotalUncheckedPrice` e `TotalCheckedPrice`.
 - Adicionada string `backToLists` em EN, PT-BR, ES, FR e CN.
+- `ListScreen` agora lê listas válidas do `AsyncStorage`, ignora chaves de configuração, descarta listas deletadas e monta ranking local de itens frequentes.
+- A seção de sugestões frequentes filtra itens já presentes na lista atual para evitar duplicidade visual.
+- Adicionadas strings `loading`, `frequentItemSuggestionsTitle`, `frequentItemSuggestionsSubtitle` e `addFrequentItem` em EN, PT-BR, ES, FR e CN.
+- `MainScreen` passou a exibir `tabBarLabel` e `tabBarAccessibilityLabel` localizados para as três abas principais.
+- Adicionadas strings `tabTrash`, `tabLists` e `tabSettings` em EN, PT-BR, ES, FR e CN.
+- `ListScreen` passou a declarar `accessibilityRole`, `accessibilityLabel`, `accessibilityState` em controles de item e modal de ordenação.
+- Adicionadas strings `checkedItemAccessibilityLabel`, `uncheckedItemAccessibilityLabel`, `deleteItemAccessibilityLabel` e `addItemAccessibilityLabel` em EN, PT-BR, ES, FR e CN.
+- Criado `src/utils/listStorage.js` para centralizar chaves de configuracao, validacao de schema de listas, leitura segura de listas e ranking baseado em listas validas.
+- `HomeScreen`, `DeleteScreen` e `ListScreen` passaram a reutilizar a mesma validacao de lista salva, reduzindo divergencia entre Home, Lixeira e sugestoes frequentes.
 
 ## Impacto para usuários
 
@@ -69,12 +87,24 @@ O MarketList ficou mais fácil de começar e mais confiável para recuperar list
 
 A tela de compra também ficou mais clara: cada lista mostra nome, data, contagem de itens, total planejado e ações rápidas no topo.
 
-## Pendências antes da quinta-feira
+E, para compras recorrentes, listas vazias agora podem mostrar itens que você costuma usar, calculados apenas a partir das listas salvas no seu aparelho.
+
+A navegação também ficou mais direta: as abas agora dizem claramente onde ficam Listas, Lixeira e Ajustes.
+
+Os principais controles da lista também ficaram mais acessíveis para quem usa leitor de tela: marcar item, deletar item, adicionar item e escolher ordenação agora têm nomes e estados claros.
+
+Por baixo, o app tambem ficou mais confiavel: Home, Lixeira e sugestoes de itens frequentes agora leem listas salvas pelo mesmo caminho seguro, evitando que preferencias ou dados invalidos interfiram nos fluxos principais.
+
+## Pendências para revisão do RC
 
 - Validar o fluxo dos modelos em dispositivo/emulador.
 - Validar a nova grade de sugestões rápidas em telas pequenas.
 - Validar o novo modal de criação manual em dispositivo/emulador, incluindo teclado e telas pequenas.
 - Validar o novo header contextual da lista em dispositivo/emulador, incluindo telas pequenas, tema escuro, voltar, ordenar e compartilhar.
+- Validar sugestões de itens frequentes em dispositivo/emulador, incluindo listas antigas, idiomas e tema escuro.
+- Validar os rótulos das abas em dispositivo/emulador, incluindo tema escuro e idiomas longos.
+- Validar os labels de acessibilidade da tela de lista com leitor de tela ou inspetor de acessibilidade.
+- Validar a nova leitura compartilhada de listas em dispositivo/emulador, cobrindo Home, Lixeira, expiracao, restauracao e sugestoes frequentes.
 - Revisar assinatura de release Android; o release ainda usa debug keystore.
 - Corrigir ou confirmar o ícone iOS em `app.json`.
 - Alinhar versões/bundle IDs iOS: `app.json`/Android/package estão em `1.3.2`, mas Xcode/Info.plist ainda apontam versão/bundle antigos.

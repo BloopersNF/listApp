@@ -10,21 +10,7 @@ import uuid from 'react-native-uuid';
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { formatCurrency } from "../utils/currency";
-
-
-
-
-
-const getData = async (key) => {
-    try {
-        const jsonValue = await AsyncStorage.getItem(key)
-        return jsonValue != null ? JSON.parse(jsonValue) : null;
-    }
-    catch (e) {
-        console.log("erro no get data:", e);
-    }
-}
-
+import { getStoredList, getStoredListKeys } from "../utils/listStorage";
 const storeData = async (key, value) => {
     try {
         if (!key || key.trim() === '') {
@@ -78,50 +64,24 @@ function formatDate(date) {
     return `${day}/${month}/${year}`;
 }
 
-const clearAllLists = async () => {
-    try {
-        await AsyncStorage.clear();
-    } catch (e) {
-        console.log(e);
-    }
-}
+const deprecatedCleanCorruptedData = async () => {
+    return [];
 
-const cleanCorruptedData = async () => {
     try {
-        const allKeys = await AsyncStorage.getAllKeys();
+        const allKeys = await getStoredListKeys();
         const keysToRemove = [];
 
         // Keys que são configurações do usuário e não devem ser deletadas
-        const userConfigKeys = [
-            'isDarkMode',
-            'selectedLanguage',
-            'languageMode',
-            'listScreenVisitCount',
-            'listSortPreference',
-            'userPreferences',
-            'appSettings'
-        ];
-
         for (const key of allKeys) {
             // Pular keys de configuração do usuário
-            if (userConfigKeys.includes(key)) {
-                continue;
-            }
-
             if (!key || key.trim() === '') {
                 keysToRemove.push(key);
                 continue;
             }
 
             try {
-                const data = await AsyncStorage.getItem(key);
-                if (!data) {
-                    keysToRemove.push(key);
-                    continue;
-                }
-
-                const parsedData = JSON.parse(data);
-                if (!parsedData || !parsedData.Name || !parsedData.Id) {
+                const parsedData = await getStoredList(key, { logPrefix: 'Removing corrupted list key' });
+                if (!parsedData) {
                     keysToRemove.push(key);
                 }
             } catch (parseError) {
@@ -130,7 +90,6 @@ const cleanCorruptedData = async () => {
         }
 
         if (keysToRemove.length > 0) {
-            await AsyncStorage.multiRemove(keysToRemove);
             console.log('Removed corrupted keys:', keysToRemove);
         }
     } catch (e) {
@@ -151,21 +110,11 @@ const HomeScreen = ({ navigation }) => {
 
     const getAllKeys = async () => {
         try {
-            const all = await AsyncStorage.getAllKeys();
+            const listKeys = await getStoredListKeys();
 
             // Keys que são configurações do usuário e não devem aparecer na lista
-            const userConfigKeys = [
-                'isDarkMode',
-                'selectedLanguage',
-                'languageMode',
-                'listScreenVisitCount',
-                'listSortPreference',
-                'userPreferences',
-                'appSettings'
-            ];
-
             // Filtrar apenas keys que são listas (não são configurações)
-            const listKeys = all.filter(key => !userConfigKeys.includes(key));
+            // listKeys already excludes config keys in the shared storage helper.
 
             setKeys(listKeys);
             return listKeys;
@@ -188,7 +137,7 @@ const HomeScreen = ({ navigation }) => {
                     .filter(key => key && key.trim() !== '') // Filtra chaves válidas
                     .map(async (key) => {
                         try {
-                            const data = await getData(key);
+                            const data = await getStoredList(key, { includeDeleted: false, logPrefix: 'Error fetching list for home' });
                             // Verificar se é realmente uma lista válida
                             if (data &&
                                 data.Name &&
@@ -224,7 +173,6 @@ const HomeScreen = ({ navigation }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            await cleanCorruptedData();
             await getAllKeys();
             await fetchLists();
         }

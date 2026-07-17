@@ -12,6 +12,9 @@ const es = {
     comingSoon: "Próximamente",
     version: "1.3.2",
     contactEmail: "marolinaana@gmail.com",
+    tabTrash: "Papelera",
+    tabLists: "Listas",
+    tabSettings: "Ajustes",
 
     // HomeScreen
     listNamePlaceholder: "Nombre de la Lista",
@@ -63,6 +66,7 @@ const es = {
 
     // ListScreen
     backToLists: "Volver a listas",
+    loading: "Cargando...",
     validNameRequired: "El artículo necesita un nombre válido.",
     invalidPrice: "Precio inválido",
     invalidPriceMessage: "Por favor, ingrese un precio válido.",
@@ -79,6 +83,14 @@ const es = {
     listEmptySubtitle: "Toque una sugerencia o use los campos de abajo para crear su lista.",
     quickAddSuggestions: "Sugerencias rápidas",
     addSuggestedItem: "Agregar artículo sugerido",
+    frequentItemSuggestionsTitle: "Artículos que usa a menudo",
+    frequentItemSuggestionsSubtitle: "Basado solo en listas guardadas en este dispositivo.",
+    addFrequentItem: "Agregar artículo frecuente",
+
+    checkedItemAccessibilityLabel: "{{0}} marcado",
+    uncheckedItemAccessibilityLabel: "{{0}} sin marcar",
+    deleteItemAccessibilityLabel: "Eliminar {{0}}",
+    addItemAccessibilityLabel: "Agregar artículo",
 
     // DeleteScreen
     deletedLists: "Listas Eliminadas",

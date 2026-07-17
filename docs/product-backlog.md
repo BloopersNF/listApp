@@ -1,8 +1,36 @@
 # Product backlog — MarketList
 
-Atualizado em 2026-07-13.
+Atualizado em 2026-07-17.
 
 ## Now
+
+- Descricao: Validar em dispositivo/emulador a leitura compartilhada de listas do `AsyncStorage`.
+  Impacto esperado: alto.
+  Esforco: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: helper `src/utils/listStorage.js` implementado em 2026-07-17; precisa confirmar Home, Lixeira, expiracao da lixeira, restauracao, listas vazias e sugestoes frequentes.
+  Status: pronto para QA.
+
+- Descrição: Validar em dispositivo/emulador os novos labels de acessibilidade da `ListScreen`.
+  Impacto esperado: médio.
+  Esforço: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: melhoria implementada em 2026-07-16; precisa confirmar leitor de tela/inspetor nos botões de marcar item, deletar item, adicionar item e opções de ordenação.
+  Status: pronto para QA.
+
+- Descrição: Validar em dispositivo/emulador os novos rótulos localizados nas abas de Lixeira, Listas e Ajustes.
+  Impacto esperado: médio.
+  Esforço: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: melhoria de descoberta implementada em 2026-07-15; precisa confirmar legibilidade em telas pequenas, tema escuro e idiomas longos.
+  Status: pronto para QA.
+
+- Descrição: Validar em dispositivo/emulador as novas sugestões de itens frequentes na lista vazia.
+  Impacto esperado: alto.
+  Esforço: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: primeiro incremento de retenção implementado em 2026-07-14; precisa confirmar leitura de listas antigas, filtros de duplicidade, tema escuro, idiomas e toque nos chips.
+  Status: pronto para QA.
 
 - Descrição: Validar em dispositivo/emulador o novo header contextual da tela de lista.
   Impacto esperado: médio/alto.
@@ -33,11 +61,11 @@ Atualizado em 2026-07-13.
   Status: implementado em 2026-07-03 com confirmação antes de mover para a lixeira.
 
 - Descrição: Centralizar leitura segura de listas do `AsyncStorage` em helper compartilhado.
-  Impacto esperado: médio.
+  Impacto esperado: alto.
   Esforço: médio.
-  Risco: baixo.
-  Fonte ou justificativa: Home e Delete duplicam lista de chaves de configuração e parsing defensivo.
-  Status: planejado.
+  Risco: baixo/médio.
+  Fonte ou justificativa: Home, Lixeira e sugestões frequentes duplicam allowlists e parsing defensivo; Engineering Agent de 2026-07-15 apontou risco de apagar preferências futuras e divergência entre telas.
+  Status: implementado em 2026-07-17 como camada compartilhada de leitura/validacao; precisa QA manual em Home, Lixeira e sugestoes frequentes.
 
 - Descrição: Validar em dispositivo real o novo estado vazio da tela de lista com sugestões rápidas.
   Impacto esperado: médio/alto.
@@ -97,7 +125,7 @@ Atualizado em 2026-07-13.
   Esforço: médio.
   Risco: médio.
   Fonte ou justificativa: Listonic, AnyList e Out of Milk destacam histórico/favoritos como acelerador de listas recorrentes; Research Agent de 2026-07-10 reforçou como melhor aposta de retenção sem sync.
-  Status: discovery.
+  Status: primeiro incremento implementado em 2026-07-14 com sugestões locais na lista vazia; próximo passo é levar reuso para listas já preenchidas/autocomplete.
 
 - Descrição: Ordenação por categoria/corredor com categorias padrão.
   Impacto esperado: médio.
@@ -194,7 +222,7 @@ Atualizado em 2026-07-13.
   Esforço: baixo.
   Risco: baixo.
   Fonte ou justificativa: Engineering Agent de 2026-07-13 encontrou uso de `getText('loading')` sem chave correspondente.
-  Status: planejado.
+  Status: corrigido em 2026-07-14 junto com as strings de sugestões frequentes.
 
 - Descrição: Adicionar cleanup para listeners e timeout do intersticial na `ListScreen`.
   Impacto esperado: médio.
@@ -219,12 +247,26 @@ Atualizado em 2026-07-13.
 
 ## Growth
 
+- Descrição: Discovery futuro de economia com ofertas confiáveis ligadas aos itens da lista.
+  Impacto esperado: alto.
+  Esforço: alto.
+  Risco: alto.
+  Fonte ou justificativa: Research Agent de 2026-07-15 comparou Bring!, Flipp, ShopSavvy, Ibotta, Pelando, Promobit e Buscapé; oportunidade exige fonte de dados, rotulagem e estratégia comercial.
+  Status: bloquear até proposta humana.
+
 - Descrição: Link compartilhável com preview útil para WhatsApp.
   Impacto esperado: alto.
   Esforço: médio/alto.
   Risco: médio.
   Fonte ou justificativa: compartilhamento social pode virar aquisição orgânica.
   Status: discovery.
+
+- Descrição: Adicionar rodapé discreto do MarketList no texto compartilhado.
+  Impacto esperado: médio/alto.
+  Esforço: baixo.
+  Risco: baixo/médio.
+  Fonte ou justificativa: Product Agent de 2026-07-14; compartilhamento por WhatsApp/texto pode gerar aquisição orgânica sem exigir deep link.
+  Status: planejado.
 
 - Descrição: Não exibir intersticial antes do usuário obter valor inicial.
   Impacto esperado: médio.
@@ -263,7 +305,14 @@ Atualizado em 2026-07-13.
   Esforço: baixo.
   Risco: baixo.
   Fonte ou justificativa: `tabBarShowLabel:false` reduz descoberta para usuário novo.
-  Status: planejado.
+  Status: implementado em 2026-07-15 com rótulos localizados nas três abas.
+
+- Descrição: Adicionar labels de acessibilidade aos botões de marcar item, deletar item e adicionar item na `ListScreen`.
+  Impacto esperado: médio.
+  Esforço: baixo.
+  Risco: baixo.
+  Fonte ou justificativa: Engineering Agent de 2026-07-15; após as abas, ainda há controles principais só com ícones.
+  Status: implementado em 2026-07-16 com labels/roles/estados localizados nos controles principais e no modal de ordenação.
 
 - Descrição: Header contextual da lista com voltar, nome, data, contagem e resumo de orçamento.
   Impacto esperado: médio/alto.

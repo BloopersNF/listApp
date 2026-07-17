@@ -5,24 +5,7 @@ import Icon from "react-native-vector-icons/AntDesign";
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-
-const USER_CONFIG_KEYS = new Set([
-    'isDarkMode',
-    'selectedLanguage',
-    'languageMode',
-    'listScreenVisitCount',
-    'listSortPreference',
-    'userPreferences',
-    'appSettings'
-]);
-
-const isValidStoredList = (value) => (
-    value &&
-    typeof value === 'object' &&
-    typeof value.Id === 'string' &&
-    typeof value.Name === 'string' &&
-    Array.isArray(value.Items)
-);
+import { getStoredList as getSharedStoredList, getStoredListKeys } from '../utils/listStorage';
 
 // Tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
@@ -32,29 +15,13 @@ const DeleteScreen = ({ navigation }) => {
     const [deletedLists, setDeletedLists] = useState([]);
 
     const getStoredList = async (key) => {
-        if (!key || USER_CONFIG_KEYS.has(key)) {
-            return null;
-        }
-
-        try {
-            const storedValue = await AsyncStorage.getItem(key);
-            if (storedValue == null) {
-                return null;
-            }
-
-            const parsedValue = JSON.parse(storedValue);
-            return isValidStoredList(parsedValue) ? parsedValue : null;
-        } catch (e) {
-            console.log('Ignoring non-list AsyncStorage key in trash:', key, e);
-            return null;
-        }
+        return getSharedStoredList(key, { logPrefix: 'Ignoring non-list AsyncStorage key in trash' });
     }
 
     // Busca todas as chaves do AsyncStorage
     const getAllKeys = async () => {
         try {
-            const all = await AsyncStorage.getAllKeys();
-            const listKeys = all.filter(key => !USER_CONFIG_KEYS.has(key));
+            const listKeys = await getStoredListKeys();
             setKeys(listKeys);
             return listKeys;
         } catch (e) {
@@ -66,7 +33,7 @@ const DeleteScreen = ({ navigation }) => {
     // Remove listas deletadas há mais de 7 dias
     const removeExpiredDeletedLists = async () => {
         try {
-            const allKeys = await AsyncStorage.getAllKeys();
+            const allKeys = await getStoredListKeys();
             for (let i = 0; i < allKeys.length; i++) {
                 const key = allKeys[i];
                 const list = await getStoredList(key);
@@ -116,7 +83,7 @@ const DeleteScreen = ({ navigation }) => {
         try {
             console.log("Deletando: ", key);
             await AsyncStorage.removeItem(key);
-            const newKeys = await AsyncStorage.getAllKeys();
+            const newKeys = await getStoredListKeys();
             setKeys(newKeys);
             await fetchAndUpdateLists();
         } catch (e) {
@@ -143,7 +110,7 @@ const DeleteScreen = ({ navigation }) => {
     // Remove todas as listas marcadas como deletadas
     const clearAllDeletedLists = async () => {
         try {
-            const allKeys = await AsyncStorage.getAllKeys();
+            const allKeys = await getStoredListKeys();
             for (let i = 0; i < allKeys.length; i++) {
                 const list = await getStoredList(allKeys[i]);
                 if (list?.Deleted) {

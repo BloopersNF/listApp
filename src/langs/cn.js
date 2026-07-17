@@ -12,6 +12,9 @@ const cn = {
     comingSoon: "即将推出",
     version: "1.3.2",
     contactEmail: "marolinaana@gmail.com",
+    tabTrash: "回收站",
+    tabLists: "列表",
+    tabSettings: "设置",
 
     // HomeScreen
     listNamePlaceholder: "列表名称",
@@ -63,6 +66,7 @@ const cn = {
 
     // ListScreen
     backToLists: "返回列表",
+    loading: "加载中...",
     validNameRequired: "项目需要有效的名称。",
     invalidPrice: "无效价格",
     invalidPriceMessage: "请输入有效价格。",
@@ -79,6 +83,14 @@ const cn = {
     listEmptySubtitle: "点按建议，或使用下方字段创建您的清单。",
     quickAddSuggestions: "快速建议",
     addSuggestedItem: "添加建议商品",
+    frequentItemSuggestionsTitle: "您常用的商品",
+    frequentItemSuggestionsSubtitle: "仅基于此设备上保存的清单。",
+    addFrequentItem: "添加常用商品",
+
+    checkedItemAccessibilityLabel: "{{0}} 已勾选",
+    uncheckedItemAccessibilityLabel: "{{0}} 未勾选",
+    deleteItemAccessibilityLabel: "删除 {{0}}",
+    addItemAccessibilityLabel: "添加商品",
 
     // DeleteScreen
     deletedLists: "已删除列表",

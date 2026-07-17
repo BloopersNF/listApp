@@ -1,6 +1,6 @@
 # Posicionamento — MarketList
 
-Atualizado em 2026-07-13.
+Atualizado em 2026-07-15.
 
 ## Tese atual
 
@@ -22,8 +22,9 @@ MarketList deve ser o app simples para planejar compras com controle de gasto, r
 - Simplicidade: começar localmente, sem cadastro obrigatório.
 - Orçamento: preço, quantidade e total são parte central, não recurso escondido.
 - Contexto dentro da compra: a tela de lista mostra nome, data, contagem, progresso e resumo de orçamento antes das ações de ordenar/compartilhar.
-- Templates e sugestões: acelerar compras recorrentes e ocasiões com modelos rápidos na Home e sugestões acionáveis na lista vazia.
+- Templates e sugestões: acelerar compras recorrentes e ocasiões com modelos rápidos na Home, sugestões acionáveis na lista vazia e itens frequentes calculados localmente a partir de listas anteriores.
 - Criação guiada: o fluxo manual agora explica o nome da lista, mostra exemplo e oferece ações textuais claras.
+- Navegação explícita: as abas principais mostram rótulos localizados para Listas, Lixeira e Ajustes, reduzindo dependência de ícones.
 - Confiança: confirmação antes de mover listas para a lixeira, recuperação funcional, dados locais previsíveis e monetização rotulada.
 
 ## Não tentar agora
@@ -41,7 +42,9 @@ MarketList deve ser o app simples para planejar compras com controle de gasto, r
 - "Antes de apagar, o MarketList confirma com você."
 - "Comece com modelos prontos e ajuste do seu jeito."
 - "Criou uma lista vazia? Toque em sugestões rápidas para começar."
+- "Reaproveite itens que você costuma comprar, sem cadastro e sem enviar seus dados."
 - "Dê um nome claro para a compra e volte a ela quando precisar."
+- "Encontre listas, lixeira e ajustes sem adivinhar pelos ícones."
 
 ## Métricas sugeridas
 
@@ -51,8 +54,10 @@ MarketList deve ser o app simples para planejar compras com controle de gasto, r
 - Compartilhamentos iniciados.
 - Listas criadas a partir de template.
 - Itens adicionados por sugestões rápidas em listas vazias.
+- Itens adicionados por sugestões frequentes locais.
 - Taxa de conversão do modal de criação manual: aberto -> lista criada.
 - Taxa de retorno/compartilhamento/ordenação a partir do header contextual da lista.
+- Toques por aba depois da inclusão de rótulos na navegação.
 - Retenção D1/D7 por usuário que adicionou ao menos 3 itens.
 
 ## Próxima tese de produto

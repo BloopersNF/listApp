@@ -1,6 +1,46 @@
 # Competidores e referências — MarketList
 
-Atualizado em 2026-07-13.
+Atualizado em 2026-07-17.
+
+## Notas da execucao de 2026-07-17
+
+- [Listonic](https://listonic.com/) reforca historico, sugestoes frequentes, budget control, ordenacao por corredores/A-Z/custom e assistente de IA como pilares competitivos. Oportunidade: o MarketList deve primeiro consolidar leitura segura de listas locais e normalizacao de dados antes de expandir sugestoes, IA ou categorias.
+- [AnyList Features](https://www.anylist.com/features) lista favoritos/master list, itens usados recentemente, autocomplete, categorizacao, precos e compartilhamento como capacidades centrais. Oportunidade: proximo incremento de growth de baixo risco e adicionar atribuicao discreta ao texto compartilhado.
+- [NerdWallet Best Grocery List Apps 2026](https://www.nerdwallet.com/finance/learn/best-grocery-list-apps) posiciona Bring!, AnyList, Cozi, Out of Milk e OurGroceries por perfis de uso. Oportunidade: MarketList deve diferenciar por simplicidade local, orcamento e confianca de dados antes de sync familiar.
+- [Listize no Product Hunt](https://www.producthunt.com/products/listize) mostra interesse em transformar textos baguncados em listas organizadas com IA. Oportunidade: parser de texto/WhatsApp pode ser aposta futura, mas depende de base de lista confiavel e controle humano.
+- [The Sun sobre smart carts com IA](https://www.the-sun.com/money/16689777/milams-market-ai-powered-shopping-carts/) mostra navegacao de loja, cupons, preferencias e comparacao por custo/nutricao em carrinhos inteligentes. Oportunidade: ofertas e rotas de loja seguem como big bet, nao como incremento diario sem fonte de dados.
+
+## Notas da execução de 2026-07-16
+
+- [AnyList](https://www.anylist.com/) confirma que sugestões, categorias, compartilhamento e meal planning são baseline competitivo. Oportunidade: evoluir o MarketList por etapas, começando por reuso local e clareza dos controles.
+- [Listonic](https://listonic.com/) reforça orçamento, histórico, sugestões, ordenação e IA como promessa de economia de tempo/dinheiro. Oportunidade: localizar moeda/data e fortalecer sugestões frequentes antes de IA.
+- [Bring!](https://www.getbring.com/) mostra lista compartilhada combinada com ofertas locais e receitas. Oportunidade: ofertas devem continuar como proposta futura bloqueada até haver fonte confiável e rotulagem.
+- [Flipp](https://flipp.com/) conecta lista a folhetos, cupons e busca por item/loja. Oportunidade: um futuro modo "economia" pode sugerir ofertas por item, mas precisa separar sugestão neutra de anúncio.
+- [ShopSavvy](https://shopsavvy.com/) diferencia por comparação, histórico de preço, alertas e barcode/foto. Oportunidade: histórico/alerta por item salvo pode ser big bet futura com transparência de fonte.
+- [Ibotta](https://home.ibotta.com/) valida cashback como monetização, mas depende de ofertas adicionadas e comprovante. Oportunidade: qualquer cashback/patrocínio no MarketList deve ter disclosure claro.
+- [Pelando](https://www.pelando.com.br/), [Promobit](https://www.promobit.com.br/) e [Buscapé](https://www.buscape.com.br/) reforçam alertas, categorias, prova social, comparação e SEO no Brasil. Oportunidade: páginas públicas de templates e alertas por item planejado são mais coerentes que feed genérico de promoções.
+
+## Notas da execução de 2026-07-15
+
+- [AnyList](https://www.anylist.com/) segue como referência de lista simples com sugestões, categorias, compartilhamento e recursos premium. Oportunidade: MarketList deve manter a navegação principal autoexplicativa antes de adicionar fluxos mais avançados.
+- [Listonic](https://listonic.com/) reforça economia de tempo/dinheiro com custo total, histórico e sugestões. Oportunidade: moeda/data localizadas e reuso de itens são próximos passos naturais para confiança.
+- [Bring!](https://www.getbring.com/) combina lista, ofertas locais e receitas. Oportunidade: ofertas no MarketList devem ser uma proposta separada, rotulada e dependente de dados confiáveis.
+- [Flipp](https://flipp.com/) mostra a força de encartes, cupons, lista e busca por loja/produto. Oportunidade: se o MarketList entrar em economia, precisa filtros práticos e origem clara da oferta.
+- [ShopSavvy](https://shopsavvy.com/) usa histórico de preço, alertas e barcode/foto como mecanismos de confiança. Oportunidade: qualquer comparação futura deve mostrar fonte, data e confiabilidade.
+- [Ibotta](https://home.ibotta.com/) monetiza cashback/ofertas patrocinadas com marcas e varejistas. Oportunidade: monetização futura precisa disclosure explícito para não misturar sugestão neutra com patrocínio.
+- [Pelando](https://www.pelando.com.br/) e [Promobit](https://www.promobit.com.br/) mostram social proof, comunidade, alertas e linguagem local brasileira. Oportunidade: comunidade/ofertas são big bet, não incremento diário seguro.
+- [Buscapé](https://www.buscape.com.br/) reforça SEO, comparação, histórico de preço e cashback. Oportunidade: páginas indexáveis por intenção continuam uma avenida futura para aquisição.
+
+## Notas da execução de 2026-07-14
+
+- [AnyList](https://www.anylist.com/) reforça sugestão de itens comuns enquanto o usuário digita, categorias automáticas e listas compartilhadas. Oportunidade: MarketList deve usar histórico local como ponte simples antes de autocomplete completo.
+- [Listonic](https://listonic.com/) destaca orçamento, sugestões personalizadas baseadas em histórico, itens frequentes e ordenação por corredores/A-Z/custom. Oportunidade: o primeiro passo de retenção do MarketList é reaproveitar itens frequentes sem conta, sync ou IA.
+- [Out of Milk](https://outofmilk.com/) comunica simplicidade, compartilhamento e histórico/templates como caminhos para compras recorrentes. Oportunidade: transformar listas antigas do usuário em sugestões acionáveis dentro da lista vazia.
+- [Bring!](https://www.getbring.com/en/home) combina lista compartilhada, ofertas locais e receitas sazonais. Oportunidade: manter ofertas como aposta futura opcional; no curto prazo, compartilhamento e reuso local têm risco menor.
+- [OurGroceries](https://www.ourgroceries.com/) enfatiza uso doméstico, compartilhamento, fotos/notas/quantidades e agrupamento por corredores. Oportunidade: fortalecer confiança e velocidade local antes de sincronização familiar.
+- [Cozi Shopping Lists](https://www.cozi.com/shopping-lists/) organiza listas por loja, receitas e uso offline. Oportunidade: modelos por ocasião/loja e categorias simples podem vir depois dos itens frequentes.
+- [Instacart AI Solutions](https://company.instacart.com/enterprise-platform/ai-solutions) mostra IA em grocery para transformar perguntas em carrinhos, planejamento e orçamento. Oportunidade: IA deve ser futura e treinada/explicada a partir do histórico local, não uma sugestão genérica precoce.
+- [Flipp](https://flipp.com/) representa a rota de flyers, cupons e lista conectada a ofertas. Oportunidade: qualquer oferta futura no MarketList precisa ser rotulada e separada de sugestões neutras.
 
 ## Notas da execução de 2026-07-13
 
