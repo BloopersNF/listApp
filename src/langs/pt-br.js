@@ -10,7 +10,7 @@ const pt = {
     appVersion: "Versão do App",
     contactUs: "Fale Conosco",
     comingSoon: "Em Breve",
-    version: "1.3.2",
+    version: "1.4.3",
     contactEmail: "marolinaana@gmail.com",
     tabTrash: "Lixeira",
     tabLists: "Listas",

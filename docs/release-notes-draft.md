@@ -1,4 +1,4 @@
-# Rascunho de release semanal — MarketList
+# Rascunho de release semanal — MarketList 1.4.3
 
 Atualizado em 2026-07-17.
 
@@ -107,5 +107,5 @@ Por baixo, o app tambem ficou mais confiavel: Home, Lixeira e sugestoes de itens
 - Validar a nova leitura compartilhada de listas em dispositivo/emulador, cobrindo Home, Lixeira, expiracao, restauracao e sugestoes frequentes.
 - Revisar assinatura de release Android; o release ainda usa debug keystore.
 - Corrigir ou confirmar o ícone iOS em `app.json`.
-- Alinhar versões/bundle IDs iOS: `app.json`/Android/package estão em `1.3.2`, mas Xcode/Info.plist ainda apontam versão/bundle antigos.
+- Alinhar versões/bundle IDs iOS: a versão compartilhada/Android está em `1.4.3`, mas Xcode/Info.plist ainda apontam versão/bundle antigos.
 - Resolver warnings do `npx expo install --check`: `expo` e `react-native` estão abaixo das versões esperadas pelo SDK 53.
