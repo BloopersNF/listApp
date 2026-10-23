@@ -4,7 +4,7 @@ import Icon from "react-native-vector-icons/AntDesign";
 
 const { width, height } = Dimensions.get('window');
 
-const CreateButton = ({method, accessibilityLabel}) => {
+const CreateButton = ({method, accessibilityLabel, disabled = false}) => {
     const buttonSize = Math.min(width, height) * 0.175; // 17.5% da menor dimensão
     const iconSize = buttonSize * 0.45; // 45% do tamanho do botão
     const margin = width * 0.07; // 7% da largura da tela
@@ -13,14 +13,17 @@ const CreateButton = ({method, accessibilityLabel}) => {
     return(
         <TouchableOpacity 
             onPress={method} 
+            disabled={disabled}
             accessibilityRole="button"
             accessibilityLabel={accessibilityLabel}
+            accessibilityState={{ disabled }}
             style={[styles.createButton, {
                 width: buttonSize,
                 height: buttonSize,
                 borderRadius: buttonSize / 2,
                 bottom: bottomMargin,
                 right: margin,
+                opacity: disabled ? 0.5 : 1,
             }]}
         >
             <Icon name="plus" size={iconSize} color="#fff"/>

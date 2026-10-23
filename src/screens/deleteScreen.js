@@ -1,149 +1,158 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, FlatList, Alert, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getStoredList as getSharedStoredList, getStoredListKeys } from '../utils/listStorage';
+import { getStoredList, getStoredListEntries, saveStoredList } from '../utils/listStorage';
+import { createMutationLock } from '../utils/mutationLock';
+import { formatLocalizedDate } from '../utils/dateFormatting';
 
 // Tela onde vão aparecer as listas deletadas
 const DeleteScreen = ({ navigation }) => {
     const { colors } = useTheme();
-    const { getText } = useLanguage();
-    const [keys, setKeys] = useState([]);
+    const { getText, selectedLanguage } = useLanguage();
     const [deletedLists, setDeletedLists] = useState([]);
+    const [loadState, setLoadState] = useState('loading');
+    const [isMutating, setIsMutating] = useState(false);
+    const trashMutationLockRef = useRef(createMutationLock());
 
-    const getStoredList = async (key) => {
-        return getSharedStoredList(key, { logPrefix: 'Ignoring non-list AsyncStorage key in trash' });
-    }
+    // Lê um snapshot completo antes de expirar qualquer registro. Se uma leitura
+    // falhar, a operação é interrompida e os dados anteriores permanecem intactos.
+    const loadTrash = React.useCallback(async () => {
+        setLoadState('loading');
 
-    // Busca todas as chaves do AsyncStorage
-    const getAllKeys = async () => {
         try {
-            const listKeys = await getStoredListKeys();
-            setKeys(listKeys);
-            return listKeys;
-        } catch (e) {
-            console.log(e);
-            return [];
-        }
-    }
+            const entries = await getStoredListEntries({
+                includeDeleted: true,
+                logPrefix: 'Error loading trash data',
+            });
+            const now = Date.now();
+            const expiredKeys = new Set();
 
-    // Remove listas deletadas há mais de 7 dias
-    const removeExpiredDeletedLists = async () => {
-        try {
-            const allKeys = await getStoredListKeys();
-            for (let i = 0; i < allKeys.length; i++) {
-                const key = allKeys[i];
-                const list = await getStoredList(key);
-                if (list?.DeletedAt && list.Deleted) {
-                    const deletedAt = new Date(list.DeletedAt);
-                    if (!Number.isNaN(deletedAt.getTime())) {
-                        const now = new Date();
-                        const diffDays = (now.getTime() - deletedAt.getTime()) / (1000 * 60 * 60 * 24);
-                        if (diffDays >= 7) {
-                            await AsyncStorage.removeItem(key);
-                        }
+            entries.forEach(({ key, list }) => {
+                if (!list.Deleted || !list.DeletedAt) {
+                    return;
+                }
+
+                const deletedAt = new Date(list.DeletedAt);
+                if (!Number.isNaN(deletedAt.getTime())) {
+                    const diffDays = (now - deletedAt.getTime()) / (1000 * 60 * 60 * 24);
+                    if (diffDays >= 7) {
+                        expiredKeys.add(key);
                     }
                 }
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    }
+            });
 
-    // Busca todas as listas deletadas a partir das chaves
-    const getDeletedLists = async (allKeys) => {
-        let lists = [];
+            if (expiredKeys.size > 0) {
+                await Promise.all([...expiredKeys].map((key) => AsyncStorage.removeItem(key)));
+            }
+
+            const lists = entries
+                .filter(({ key, list }) => list.Deleted && !expiredKeys.has(key))
+                .map(({ list }) => ({ ...list }))
+                .sort((a, b) => new Date(b.DeletedAt || 0) - new Date(a.DeletedAt || 0));
+
+            setDeletedLists(lists);
+            setLoadState('ready');
+        } catch (error) {
+            console.log('Error loading trash:', error);
+            setLoadState('error');
+        }
+    }, []);
+
+    const runTrashMutation = async (operation) => {
+        if (!trashMutationLockRef.current.tryAcquire()) {
+            return;
+        }
+
+        setIsMutating(true);
         try {
-            for (let i = 0; i < allKeys.length; i++) {
-                const list = await getStoredList(allKeys[i]);
-                if (list?.Deleted) {
-                    lists.push({ ...list });
-                }
-            }
-        } catch (e) {
-            console.log(e);
+            await operation();
+            await loadTrash();
+        } catch (error) {
+            console.log('Error updating trash:', error);
+            Alert.alert(getText('storageErrorTitle'), getText('storageErrorMessage'));
+        } finally {
+            trashMutationLockRef.current.release();
+            setIsMutating(false);
         }
-        return lists.sort((a, b) => new Date(b.DeletedAt || 0) - new Date(a.DeletedAt || 0));
-    }
-
-    // Atualiza os estados de chaves e listas deletadas
-    const fetchAndUpdateLists = async () => {
-        await removeExpiredDeletedLists();
-        const allKeys = await getAllKeys();
-        const lists = await getDeletedLists(allKeys);
-        setKeys(allKeys);
-        setDeletedLists(lists);
-    }
+    };
 
     // Deleta uma lista permanentemente
     const deleteList = async (key) => {
-        try {
-            console.log("Deletando: ", key);
-            await AsyncStorage.removeItem(key);
-            const newKeys = await getStoredListKeys();
-            setKeys(newKeys);
-            await fetchAndUpdateLists();
-        } catch (e) {
-            console.log(e);
-        }
+        await runTrashMutation(() => AsyncStorage.removeItem(key));
     }
 
     // Restaura uma lista deletada
     const restoreList = async (key) => {
-        try {
-            const list = await getStoredList(key);
+        await runTrashMutation(async () => {
+            const list = await getStoredList(key, { logPrefix: 'Error restoring trash list' });
             if (!list) {
-                return;
+                throw new Error('Trash list is unavailable');
             }
-            list.Deleted = false;
-            list.DeletedAt = null;
-            await AsyncStorage.setItem(key, JSON.stringify(list));
-            fetchAndUpdateLists();
-        } catch (e) {
-            console.log(e);
-        }
+
+            await saveStoredList(key, {
+                ...list,
+                Deleted: false,
+                DeletedAt: null,
+            });
+        });
     }
 
     // Remove todas as listas marcadas como deletadas
     const clearAllDeletedLists = async () => {
-        try {
-            const allKeys = await getStoredListKeys();
-            for (let i = 0; i < allKeys.length; i++) {
-                const list = await getStoredList(allKeys[i]);
-                if (list?.Deleted) {
-                    await AsyncStorage.removeItem(allKeys[i]);
-                }
-            }
-            await fetchAndUpdateLists();
-        } catch (e) {
-            console.log(e);
-        }
-    }
+        await runTrashMutation(async () => {
+            const entries = await getStoredListEntries({
+                includeDeleted: true,
+                logPrefix: 'Error clearing trash',
+            });
+            const deletedKeys = entries
+                .filter(({ list }) => list.Deleted)
+                .map(({ key }) => key);
 
-    // Atualiza listas ao montar o componente
-    useEffect(() => {
-        const fetchData = async () => {
-            await fetchAndUpdateLists();
-        }
-        fetchData();
-    }, []);
+            await Promise.all(deletedKeys.map((key) => AsyncStorage.removeItem(key)));
+        });
+    };
 
     // Atualiza listas sempre que a tela ganhar foco
     useFocusEffect(
         React.useCallback(() => {
-            const fetchData = async () => {
-                await fetchAndUpdateLists();
-            }
-            fetchData();
-        }, [])
+            loadTrash();
+        }, [loadTrash])
     );
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-            {deletedLists.length > 0 ? (
+            {loadState === 'error' ? (
+                <View style={styles.recoveryContainer} testID="trash-storage-error">
+                    <Icon name="exclamationcircleo" size={48} color={colors.danger} />
+                    <Text selectable style={[styles.recoveryTitle, { color: colors.text }]}>
+                        {getText('storageReadErrorTitle')}
+                    </Text>
+                    <Text selectable style={[styles.recoveryMessage, { color: colors.textSecondary }]}>
+                        {getText('storageReadErrorMessage')}
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles.retryButton, { backgroundColor: colors.primary }]}
+                        onPress={loadTrash}
+                        accessibilityRole="button"
+                        accessibilityLabel={getText('tryAgain')}
+                        testID="trash-storage-retry"
+                    >
+                        <Icon name="reload1" size={18} color="#fff" />
+                        <Text style={styles.retryButtonText}>{getText('tryAgain')}</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : loadState === 'loading' ? (
+                <View style={styles.recoveryContainer} testID="trash-loading">
+                    <Icon name="loading1" size={44} color={colors.primary} />
+                    <Text selectable style={[styles.recoveryMessage, { color: colors.textSecondary }]}>
+                        {getText('loading')}
+                    </Text>
+                </View>
+            ) : deletedLists.length > 0 ? (
                 <>
                     <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                         <Text style={[styles.headerTitle, { color: colors.text }]}>{getText('deletedLists')}</Text>
@@ -152,6 +161,10 @@ const DeleteScreen = ({ navigation }) => {
                         </Text>
                         <TouchableOpacity
                             style={[styles.clearAllButton, { backgroundColor: colors.danger }]}
+                            disabled={isMutating}
+                            accessibilityRole="button"
+                            accessibilityLabel={getText('clearAll')}
+                            testID="trash-clear-all"
                             onPress={() => {
                                 Alert.alert(
                                     getText('clearTrashConfirm'),
@@ -174,7 +187,7 @@ const DeleteScreen = ({ navigation }) => {
                         contentContainerStyle={styles.listContainer}
                         renderItem={({ item, index }) => {
                             if (item.Deleted) {
-                                const deletedDate = item.DeletedAt ? new Date(item.DeletedAt).toLocaleDateString('pt-BR') : '';
+                                const deletedDate = formatLocalizedDate(item.DeletedAt, selectedLanguage);
                                 return (
                                     <View style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
                                         <View style={styles.listContent}>
@@ -190,7 +203,11 @@ const DeleteScreen = ({ navigation }) => {
                                             <View style={styles.actions}>
                                                 <TouchableOpacity
                                                     style={[styles.actionButton, styles.restoreButton, { backgroundColor: colors.primary }]}
+                                                    disabled={isMutating}
                                                     onPress={() => restoreList(item.Id)}
+                                                    accessibilityRole="button"
+                                                    accessibilityLabel={`${getText('restore')}: ${item.Name}`}
+                                                    testID={`trash-restore-${item.Id}`}
                                                 >
                                                     <Icon name="reload1" size={18} color="#fff" />
                                                     <Text style={styles.actionText}>{getText('restore')}</Text>
@@ -198,6 +215,10 @@ const DeleteScreen = ({ navigation }) => {
 
                                                 <TouchableOpacity
                                                     style={[styles.actionButton, styles.deleteButton, { backgroundColor: colors.danger }]}
+                                                    disabled={isMutating}
+                                                    accessibilityRole="button"
+                                                    accessibilityLabel={`${getText('deleteForever')}: ${item.Name}`}
+                                                    testID={`trash-delete-${item.Id}`}
                                                     onPress={() => {
                                                         Alert.alert(
                                                             getText('deleteForever'),
@@ -238,6 +259,39 @@ const DeleteScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    recoveryContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+    },
+    recoveryTitle: {
+        fontSize: 21,
+        fontWeight: '700',
+        textAlign: 'center',
+        marginTop: 18,
+        marginBottom: 8,
+    },
+    recoveryMessage: {
+        fontSize: 15,
+        lineHeight: 21,
+        textAlign: 'center',
+    },
+    retryButton: {
+        minHeight: 46,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+        paddingHorizontal: 18,
+        marginTop: 20,
+    },
+    retryButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '700',
+        marginLeft: 8,
     },
     header: {
         padding: 20,

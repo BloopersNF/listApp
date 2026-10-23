@@ -1,38 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import { BannerAd, BannerAdSize, TestIds } from '../utils/mobileAds';
-
-const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-9404218606533420/2553683512';
+import { BannerAd, BannerAdSize } from '../utils/mobileAds';
+import { useAds } from '../context/AdsContext';
+import { useTheme } from '../context/ThemeContext';
+import { classifyAdError } from '../utils/adDiagnostics';
 
 const AdBanner = () => {
-  // Verificar se AdMob está habilitado globalmente
-  if (!global.AdMobEnabled) {
-    console.log('AdBanner: AdMob desabilitado, não mostrando banner');
-    return null;
-  }
+  const { ready, foreground, bannerUnitId, requestOptions, consentRevision, recordAdEvent } = useAds();
+  const { colors } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (!ready) setMounted(false);
+    else if (foreground) setMounted(true);
+  }, [ready, foreground]);
+  if (!ready || !mounted || !bannerUnitId) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }, !foreground && styles.hidden]}>
       <BannerAd
-        unitId={adUnitId}
+        key={consentRevision}
+        unitId={bannerUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
-        }}
+        requestOptions={requestOptions}
         onAdLoaded={() => {
-          console.log('Banner ad loaded');
+          recordAdEvent('loaded', { format: 'banner' });
         }}
         onAdFailedToLoad={(error) => {
-          console.log('Banner ad failed to load:', error);
+          recordAdEvent('load_failed', { format: 'banner', code: String(error?.code || 'unknown'), reason: classifyAdError(error) });
         }}
+        onAdImpression={() => recordAdEvent('impression', { format: 'banner' })}
+        onPaid={(event) => recordAdEvent('paid', { format: 'banner', ...event })}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  hidden: { display: 'none' },
   container: {
     width: '100%', // Garante que o banner ocupe toda a largura da tela
+    minHeight: Platform.OS === 'ios' ? 66 : 60,
     alignItems: 'center',
     backgroundColor: '#fff',
     paddingVertical: Platform.OS === 'ios' ? 8 : 5,

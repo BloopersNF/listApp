@@ -1,6 +1,8 @@
 export { default } from 'react-native-google-mobile-ads';
 export {
   AdEventType,
+  AdsConsent,
+  AdsConsentPrivacyOptionsRequirementStatus,
   BannerAd,
   BannerAdSize,
   InterstitialAd,

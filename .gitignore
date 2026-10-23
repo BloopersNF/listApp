@@ -33,3 +33,10 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Local build material and signing credentials
+.tmp/
+debug.log
+credentials.json
+google-service-account.json
+android/app/eas-build.gradle

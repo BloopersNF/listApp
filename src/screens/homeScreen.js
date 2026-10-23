@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { SafeAreaView, Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, TextInput, FlatList } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView, Alert, Platform, KeyboardAvoidingView, Text, StyleSheet, View, TouchableOpacity, Modal, TextInput, FlatList, ActivityIndicator } from "react-native";
 import CreateButton from "../components/createButton";
 import Icon from "react-native-vector-icons/AntDesign";
 import List from "../components/List";
@@ -10,24 +9,10 @@ import uuid from 'react-native-uuid';
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
 import { formatCurrency } from "../utils/currency";
-import { getStoredList, getStoredListKeys } from "../utils/listStorage";
-const storeData = async (key, value) => {
-    try {
-        if (!key || key.trim() === '') {
-            console.log('Invalid key provided to storeData:', key);
-            return;
-        }
-        if (!value) {
-            console.log('Invalid value provided to storeData:', value);
-            return;
-        }
-        const jsonValue = JSON.stringify(value);
-        await AsyncStorage.setItem(key, jsonValue);
-    }
-    catch (e) {
-        console.log('Error in storeData:', e);
-    }
-}
+import { getItemsWithoutPriceCount } from "../utils/listPricing";
+import { getListProgress } from "../utils/listProgress";
+import { filterListsByName } from "../utils/homeListSearch";
+import { getStoredList, getStoredListKeys, saveStoredList } from "../utils/listStorage";
 
 const STARTER_TEMPLATES = [
     {
@@ -103,30 +88,21 @@ const HomeScreen = ({ navigation }) => {
     const { getText } = useLanguage();
     const [modalVisible, setModalVisible] = useState(false);
     const [listName, setListName] = useState('');
-    const [keys, setKeys] = useState([]);
     const [lists, setLists] = useState([]);
     const [id, setId] = useState(0);
+    const [isLoadingLists, setIsLoadingLists] = useState(true);
+    const [listLoadError, setListLoadError] = useState(false);
+    const [creationSource, setCreationSource] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const listNameInputRef = useRef(null);
-
-    const getAllKeys = async () => {
-        try {
-            const listKeys = await getStoredListKeys();
-
-            // Keys que são configurações do usuário e não devem aparecer na lista
-            // Filtrar apenas keys que são listas (não são configurações)
-            // listKeys already excludes config keys in the shared storage helper.
-
-            setKeys(listKeys);
-            return listKeys;
-        } catch (e) {
-            console.log(e);
-            return [];
-        }
-    }
+    const creationLockRef = useRef(false);
 
     const fetchLists = async () => {
+        setIsLoadingLists(true);
+        setListLoadError(false);
+
         try {
-            const fetchedKeys = await getAllKeys();
+            const fetchedKeys = await getStoredListKeys();
             if (!fetchedKeys || fetchedKeys.length === 0) {
                 setLists([]);
                 return;
@@ -136,21 +112,15 @@ const HomeScreen = ({ navigation }) => {
                 fetchedKeys
                     .filter(key => key && key.trim() !== '') // Filtra chaves válidas
                     .map(async (key) => {
-                        try {
-                            const data = await getStoredList(key, { includeDeleted: false, logPrefix: 'Error fetching list for home' });
-                            // Verificar se é realmente uma lista válida
-                            if (data &&
-                                data.Name &&
-                                data.Id &&
-                                typeof data.Name === 'string' &&
-                                data.Name.trim() !== '') {
-                                return data;
-                            }
-                            return null;
-                        } catch (error) {
-                            console.log('Error fetching data for key:', key, error);
-                            return null;
+                        const data = await getStoredList(key, { includeDeleted: false, logPrefix: 'Error fetching list for home' });
+                        if (data &&
+                            data.Name &&
+                            data.Id &&
+                            typeof data.Name === 'string' &&
+                            data.Name.trim() !== '') {
+                            return data;
                         }
+                        return null;
                     })
             );
 
@@ -166,35 +136,15 @@ const HomeScreen = ({ navigation }) => {
             setLists(filteredLists);
         } catch (error) {
             console.log('Error in fetchLists:', error);
-            setLists([]);
+            setListLoadError(true);
+        } finally {
+            setIsLoadingLists(false);
         }
     };
 
-
-    useEffect(() => {
-        const fetchData = async () => {
-            await getAllKeys();
-            await fetchLists();
-        }
-        fetchData();
-    }, []);
-
-
-    useEffect(() => {
-        const fetchData = async () => {
-            await getAllKeys();
-            await fetchLists();
-        }
-        fetchData();
-    }, [keys.length]);
-
     useFocusEffect(
         React.useCallback(() => {
-            const fetchData = async () => {
-                await getAllKeys();
-                await fetchLists();
-            }
-            fetchData();
+            fetchLists();
         }, [])
     );
 
@@ -213,16 +163,33 @@ const HomeScreen = ({ navigation }) => {
 
 
     const closeModal = () => {
+        if (creationLockRef.current) {
+            return;
+        }
+
         setModalVisible(false);
     }
 
-    const createList = async (nameOverride = listName, templateItemKeys = []) => {
+    const openCreateModal = () => {
+        if (!creationLockRef.current) {
+            setModalVisible(true);
+        }
+    };
+
+    const createList = async (nameOverride = listName, templateItemKeys = [], source = 'manual') => {
         const normalizedListName = nameOverride?.trim();
 
         if (!normalizedListName) {
             Alert.alert(getText('invalidListName'));
-            return;
+            return false;
         }
+
+        if (creationLockRef.current) {
+            return false;
+        }
+
+        creationLockRef.current = true;
+        setCreationSource(source);
 
         try {
             const newId = uuid.v4();
@@ -230,26 +197,31 @@ const HomeScreen = ({ navigation }) => {
 
             if (!newId) {
                 Alert.alert(getText('errorGeneratingId'));
-                return;
+                return false;
             }
 
             const starterItems = templateItemKeys.map((itemKey) => new Item(getText(itemKey), '0', '1'));
             const newList = new List(normalizedListName, starterItems, 0, false, newId, newDate);
             console.log('Creating list with ID:', newId);
 
-            await storeData(newId, newList);
+            await saveStoredList(String(newId), newList);
             setListName('');
             await fetchLists();
             setModalVisible(false);
             navigation.navigate('List', { name: normalizedListName, id: String(newId), date: newDate });
+            return true;
         } catch (error) {
             console.log('Error creating list:', error);
-            Alert.alert(getText('errorCreatingList'));
+            Alert.alert(getText('errorCreatingList'), getText('storageErrorMessage'));
+            return false;
+        } finally {
+            creationLockRef.current = false;
+            setCreationSource(null);
         }
     };
 
     const createTemplateList = (template) => {
-        createList(getText(template.titleKey), template.itemKeys);
+        createList(getText(template.titleKey), template.itemKeys, template.titleKey);
     };
 
     const deleteList = async (list) => {
@@ -257,11 +229,11 @@ const HomeScreen = ({ navigation }) => {
             const deletedList = { ...list };
             deletedList.Deleted = true;
             deletedList.DeletedAt = new Date().toISOString();
-            await storeData(deletedList.Id, deletedList);
+            await saveStoredList(deletedList.Id, deletedList);
             await fetchLists();
         } catch (error) {
             console.log('Error deleting list:', error);
-            Alert.alert(getText('errorDeletingList'));
+            Alert.alert(getText('errorDeletingList'), getText('storageErrorMessage'));
         }
     };
 
@@ -276,8 +248,122 @@ const HomeScreen = ({ navigation }) => {
         );
     };
 
+    const renderTemplateGrid = () => (
+        <View style={styles.templateGrid}>
+            {STARTER_TEMPLATES.map((template) => (
+                <TouchableOpacity
+                    key={template.titleKey}
+                    testID={`template-${template.titleKey}`}
+                    style={[
+                        styles.templateCard,
+                        {
+                            backgroundColor: colors.surface,
+                            borderColor: colors.borderLight,
+                            opacity: creationSource && creationSource !== template.titleKey ? 0.5 : 1,
+                        }
+                    ]}
+                    onPress={() => createTemplateList(template)}
+                    disabled={creationSource !== null}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${getText('homeUseTemplate')}: ${getText(template.titleKey)}`}
+                    accessibilityState={{
+                        disabled: creationSource !== null,
+                        busy: creationSource === template.titleKey,
+                    }}
+                >
+                    {creationSource === template.titleKey ? (
+                        <ActivityIndicator size="small" color={colors.primary} testID={`template-loading-${template.titleKey}`} />
+                    ) : (
+                        <Icon name={template.icon} size={22} color={colors.primary} />
+                    )}
+                    <Text style={[styles.templateTitle, { color: colors.text }]}>{getText(template.titleKey)}</Text>
+                    <Text style={[styles.templateDescription, { color: colors.textTertiary }]} numberOfLines={2}>
+                        {getText(template.descriptionKey)}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+        </View>
+    );
+
+    const renderValueProposition = () => (
+        <View
+            style={[styles.valueProposition, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+            testID="home-value-proposition"
+        >
+            <View style={[styles.valuePropositionIcon, { backgroundColor: colors.primary + '15' }]}>
+                <Icon name="calculator" size={24} color={colors.primary} />
+            </View>
+            <View style={styles.valuePropositionCopy}>
+                <Text style={[styles.valuePropositionTitle, { color: colors.text }]}>
+                    {getText('homeValueTitle')}
+                </Text>
+                <Text style={[styles.valuePropositionSubtitle, { color: colors.textSecondary }]}>
+                    {getText('homeValueSubtitle')}
+                </Text>
+            </View>
+        </View>
+    );
+
+    const renderSearch = () => (
+        <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
+            <Icon name="search1" size={20} color={colors.textSecondary} />
+            <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={getText('homeSearchPlaceholder')}
+                placeholderTextColor={colors.textSecondary}
+                returnKeyType="search"
+                autoCorrect={false}
+                accessibilityLabel={getText('homeSearchAccessibilityLabel')}
+                testID="home-list-search"
+            />
+            {searchQuery.length > 0 ? (
+                <TouchableOpacity
+                    style={styles.clearSearchButton}
+                    onPress={() => setSearchQuery('')}
+                    accessibilityRole="button"
+                    accessibilityLabel={getText('homeSearchClear')}
+                    testID="home-list-search-clear"
+                >
+                    <Icon name="closecircle" size={20} color={colors.textSecondary} />
+                </TouchableOpacity>
+            ) : null}
+        </View>
+    );
+
+    const renderListHeader = () => (
+        <>
+            {renderValueProposition()}
+            {renderSearch()}
+        </>
+    );
+
+    const renderSearchEmptyState = () => (
+        <View style={styles.searchEmptyState} testID="home-list-search-empty">
+            <Icon name="search1" size={42} color={colors.textTertiary} />
+            <Text style={[styles.searchEmptyTitle, { color: colors.text }]}>
+                {getText('homeSearchNoResultsTitle')}
+            </Text>
+            <Text style={[styles.searchEmptyMessage, { color: colors.textSecondary }]}>
+                {getText('homeSearchNoResultsMessage', { 0: searchQuery.trim() })}
+            </Text>
+            <TouchableOpacity
+                style={[styles.searchEmptyButton, { borderColor: colors.border }]}
+                onPress={() => setSearchQuery('')}
+                accessibilityRole="button"
+                accessibilityLabel={getText('homeSearchClear')}
+            >
+                <Text style={[styles.searchEmptyButtonText, { color: colors.primary }]}>
+                    {getText('homeSearchClear')}
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
+
     const renderEmptyState = () => (
         <View style={styles.emptyState}>
+            {renderValueProposition()}
             <View style={[styles.emptyIconContainer, { backgroundColor: colors.primary + '15' }]}>
                 <Icon name="shoppingcart" size={42} color={colors.primary} />
             </View>
@@ -285,68 +371,136 @@ const HomeScreen = ({ navigation }) => {
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>{getText('homeEmptySubtitle')}</Text>
 
             <TouchableOpacity
-                style={[styles.primaryEmptyButton, { backgroundColor: colors.primary }]}
-                onPress={() => setModalVisible(true)}
+                style={[
+                    styles.primaryEmptyButton,
+                    { backgroundColor: colors.primary, opacity: creationSource ? 0.5 : 1 }
+                ]}
+                onPress={openCreateModal}
+                disabled={creationSource !== null}
                 accessibilityRole="button"
                 accessibilityLabel={getText('homeCreateBlank')}
+                accessibilityState={{ disabled: creationSource !== null }}
             >
                 <Icon name="pluscircleo" size={18} color="#fff" />
                 <Text style={styles.primaryEmptyButtonText}>{getText('homeCreateBlank')}</Text>
             </TouchableOpacity>
 
             <Text style={[styles.templateSectionTitle, { color: colors.text }]}>{getText('homeTemplateSectionTitle')}</Text>
-            <View style={styles.templateGrid}>
-                {STARTER_TEMPLATES.map((template) => (
-                    <TouchableOpacity
-                        key={template.titleKey}
-                        style={[styles.templateCard, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
-                        onPress={() => createTemplateList(template)}
-                        accessibilityRole="button"
-                        accessibilityLabel={`${getText('homeUseTemplate')}: ${getText(template.titleKey)}`}
-                    >
-                        <Icon name={template.icon} size={22} color={colors.primary} />
-                        <Text style={[styles.templateTitle, { color: colors.text }]}>{getText(template.titleKey)}</Text>
-                        <Text style={[styles.templateDescription, { color: colors.textTertiary }]} numberOfLines={2}>
-                            {getText(template.descriptionKey)}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            {renderTemplateGrid()}
         </View>
     );
 
-    const canCreateList = listName.trim().length > 0;
+    const renderTemplateFooter = () => (
+        <View style={styles.templateFooter} testID="home-template-section">
+            <Text style={[styles.templateSectionTitle, { color: colors.text }]}>
+                {getText('homeTemplateReturningTitle')}
+            </Text>
+            <Text style={[styles.templateFooterSubtitle, { color: colors.textSecondary }]}>
+                {getText('homeTemplateReturningSubtitle')}
+            </Text>
+            {renderTemplateGrid()}
+        </View>
+    );
+
+    const isCreatingList = creationSource !== null;
+    const canCreateList = listName.trim().length > 0 && !isCreatingList;
+    const visibleLists = filterListsByName(lists, searchQuery);
+    const isSearching = searchQuery.trim().length > 0;
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-            <FlatList
-                data={Object.keys(lists)}
-                renderItem={({ item }) => {
-                    const list = lists[item];
+            {listLoadError ? (
+                <View style={styles.storageRecovery} testID="home-storage-error">
+                    <Icon name="exclamationcircleo" size={48} color={colors.danger} />
+                    <Text style={[styles.storageRecoveryTitle, { color: colors.text }]}>
+                        {getText('storageReadErrorTitle')}
+                    </Text>
+                    <Text style={[styles.storageRecoveryMessage, { color: colors.textSecondary }]}>
+                        {getText('storageReadErrorMessage')}
+                    </Text>
+                    <TouchableOpacity
+                        style={[styles.storageRetryButton, { backgroundColor: colors.primary }]}
+                        onPress={fetchLists}
+                        accessibilityRole="button"
+                        accessibilityLabel={getText('tryAgain')}
+                        testID="home-storage-retry"
+                    >
+                        <Icon name="reload1" size={18} color="#fff" />
+                        <Text style={styles.storageRetryButtonText}>{getText('tryAgain')}</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : isLoadingLists ? (
+                <View style={styles.storageRecovery} testID="home-loading">
+                    <Icon name="loading1" size={44} color={colors.primary} />
+                    <Text style={[styles.storageRecoveryMessage, { color: colors.textSecondary }]}>
+                        {getText('loading')}
+                    </Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={visibleLists}
+                renderItem={({ item: list }) => {
 
                     // Verificações de segurança
                     if (!list || list.Deleted || !list.Name || !list.Id) {
                         return null;
                     }
 
+                    const hasItemsWithoutPrice = getItemsWithoutPriceCount(list.Items) > 0;
+                    const progress = getListProgress(list.Items);
+                    const progressText = progress.status === 'empty'
+                        ? getText('homeListEmpty')
+                        : progress.status === 'completed'
+                            ? getText('homeListCompleted')
+                            : getText('homeListProgress', { 0: progress.completed, 1: progress.total });
+
                     return (
-                        <TouchableOpacity
+                        <View
                             style={[styles.listItem, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+                        >
+                            <TouchableOpacity
+                            style={styles.listMainButton}
                             onPress={() => navigation.navigate('List', { name: list.Name, id: list.Id })}
+                            accessibilityRole="button"
+                            accessibilityLabel={`${list.Name}. ${progressText}. ${getText(hasItemsWithoutPrice ? 'totalPartial' : 'totalPrice')}: ${formatCurrency(list.TotalPrice || 0)}`}
                         >
                             <View style={styles.listContent}>
                                 <View style={styles.listHeader}>
                                     <Text style={[styles.listTitle, { color: colors.text }]} numberOfLines={1}>
                                         {list.Name}
                                     </Text>
-                                    <TouchableOpacity
-                                        style={styles.deleteButton}
-                                        onPress={() => confirmDeleteList(list)}
-                                        accessibilityRole="button"
-                                        accessibilityLabel={`${getText('delete')}: ${list.Name}`}
+                                </View>
+                                <View style={styles.progressRow}>
+                                    <Text
+                                        style={[
+                                            styles.progressText,
+                                            { color: progress.status === 'completed' ? colors.success : colors.textSecondary }
+                                        ]}
                                     >
-                                        <Icon name="delete" size={20} color="#e22" />
-                                    </TouchableOpacity>
+                                        {progressText}
+                                    </Text>
+                                    {progress.total > 0 ? (
+                                        <View
+                                            style={[styles.progressTrack, { backgroundColor: colors.borderLight }]}
+                                            accessibilityRole="progressbar"
+                                            accessibilityValue={{
+                                                min: 0,
+                                                max: progress.total,
+                                                now: progress.completed,
+                                                text: progressText,
+                                            }}
+                                        >
+                                            <View
+                                                style={[
+                                                    styles.progressFill,
+                                                    {
+                                                        backgroundColor: progress.status === 'completed' ? colors.success : colors.primary,
+                                                        width: `${progress.ratio * 100}%`,
+                                                    }
+                                                ]}
+                                            />
+                                        </View>
+                                    ) : null}
                                 </View>
                                 <View style={styles.listFooter}>
                                     <Text style={[styles.listInfo, { color: colors.textTertiary }]}>
@@ -356,20 +510,36 @@ const HomeScreen = ({ navigation }) => {
                                         {list.Date || ''}
                                     </Text>
                                     <Text style={[styles.listPrice, { color: "#2b2" }]}>
-                                        {formatCurrency(list.TotalPrice || 0)}
+                                        {getText(hasItemsWithoutPrice ? 'totalPartial' : 'totalPrice')}: {formatCurrency(list.TotalPrice || 0)}
                                     </Text>
                                 </View>
                             </View>
-                        </TouchableOpacity>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.deleteButton}
+                                onPress={() => confirmDeleteList(list)}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${getText('delete')}: ${list.Name}`}
+                            >
+                                <Icon name="delete" size={20} color={colors.danger} />
+                            </TouchableOpacity>
+                        </View>
                     )
                 }}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item.Id}
                 initialNumToRender={10}
                 removeClippedSubviews={true}
                 contentContainerStyle={[styles.listContainer, lists.length === 0 && styles.emptyListContainer]}
-                ListEmptyComponent={renderEmptyState}
+                ListEmptyComponent={lists.length === 0 ? renderEmptyState : renderSearchEmptyState}
+                    ListHeaderComponent={lists.length > 0 ? renderListHeader : null}
+                    ListFooterComponent={lists.length > 0 && !isSearching ? renderTemplateFooter : null}
+                />
+            )}
+            <CreateButton
+                method={openCreateModal}
+                accessibilityLabel={getText('createList')}
+                disabled={isCreatingList}
             />
-            <CreateButton method={() => setModalVisible(true)} accessibilityLabel={getText('createList')} />
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -396,6 +566,7 @@ const HomeScreen = ({ navigation }) => {
                                 placeholderTextColor={colors.textSecondary}
                                 returnKeyType="done"
                                 onSubmitEditing={() => createList()}
+                                editable={!isCreatingList}
                                 maxLength={50}
                                 accessibilityLabel={getText('listNamePlaceholder')}
                             />
@@ -403,8 +574,10 @@ const HomeScreen = ({ navigation }) => {
                                 <TouchableOpacity
                                     style={[styles.secondaryModalButton, { borderColor: colors.border }]}
                                     onPress={closeModal}
+                                    disabled={isCreatingList}
                                     accessibilityRole="button"
                                     accessibilityLabel={getText('cancel')}
+                                    accessibilityState={{ disabled: isCreatingList }}
                                 >
                                     <Icon name="close" size={18} color={colors.text} />
                                     <Text style={[styles.secondaryModalButtonText, { color: colors.text }]}>
@@ -420,9 +593,16 @@ const HomeScreen = ({ navigation }) => {
                                     disabled={!canCreateList}
                                     accessibilityRole="button"
                                     accessibilityLabel={getText('createList')}
+                                    accessibilityState={{ disabled: !canCreateList, busy: isCreatingList }}
                                 >
-                                    <Icon name="check" size={18} color="#fff" />
-                                    <Text style={styles.primaryModalButtonText}>{getText('createList')}</Text>
+                                    {isCreatingList ? (
+                                        <ActivityIndicator size="small" color="#fff" />
+                                    ) : (
+                                        <Icon name="check" size={18} color="#fff" />
+                                    )}
+                                    <Text style={styles.primaryModalButtonText}>
+                                        {getText(isCreatingList ? 'savingChanges' : 'createList')}
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -443,6 +623,124 @@ const styles = StyleSheet.create({
     emptyListContainer: {
         flexGrow: 1,
         justifyContent: "center",
+    },
+    valueProposition: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: 14,
+        padding: 16,
+        marginHorizontal: 16,
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    valuePropositionIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 14,
+    },
+    valuePropositionCopy: {
+        flex: 1,
+    },
+    valuePropositionTitle: {
+        fontSize: 17,
+        lineHeight: 22,
+        fontWeight: "700",
+        marginBottom: 4,
+    },
+    valuePropositionSubtitle: {
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    searchContainer: {
+        minHeight: 48,
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderRadius: 12,
+        marginHorizontal: 16,
+        marginTop: 4,
+        marginBottom: 8,
+        paddingLeft: 14,
+    },
+    searchInput: {
+        flex: 1,
+        minHeight: 48,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        fontSize: 16,
+    },
+    clearSearchButton: {
+        width: 48,
+        height: 48,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    searchEmptyState: {
+        alignItems: "center",
+        paddingHorizontal: 32,
+        paddingVertical: 40,
+    },
+    searchEmptyTitle: {
+        fontSize: 19,
+        fontWeight: "700",
+        textAlign: "center",
+        marginTop: 14,
+        marginBottom: 6,
+    },
+    searchEmptyMessage: {
+        fontSize: 14,
+        lineHeight: 20,
+        textAlign: "center",
+    },
+    searchEmptyButton: {
+        minHeight: 44,
+        borderWidth: 1,
+        borderRadius: 8,
+        justifyContent: "center",
+        paddingHorizontal: 18,
+        marginTop: 18,
+    },
+    searchEmptyButtonText: {
+        fontSize: 14,
+        fontWeight: "700",
+    },
+    storageRecovery: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 32,
+    },
+    storageRecoveryTitle: {
+        fontSize: 21,
+        fontWeight: "700",
+        textAlign: "center",
+        marginTop: 18,
+        marginBottom: 8,
+    },
+    storageRecoveryMessage: {
+        fontSize: 15,
+        lineHeight: 21,
+        textAlign: "center",
+        marginTop: 12,
+    },
+    storageRetryButton: {
+        minHeight: 46,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 8,
+        paddingHorizontal: 18,
+        marginTop: 20,
+    },
+    storageRetryButtonText: {
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: "700",
+        marginLeft: 8,
     },
     emptyState: {
         paddingHorizontal: 24,
@@ -491,6 +789,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "700",
         marginBottom: 12,
+    },
+    templateFooter: {
+        paddingHorizontal: 16,
+        paddingTop: 20,
+    },
+    templateFooterSubtitle: {
+        fontSize: 14,
+        lineHeight: 20,
+        marginTop: -4,
+        marginBottom: 14,
     },
     templateGrid: {
         width: "100%",
@@ -597,7 +905,6 @@ const styles = StyleSheet.create({
         marginLeft: 8,
     },
     listItem: {
-        padding: 16,
         borderWidth: 1,
         margin: 8,
         borderRadius: 12,
@@ -609,6 +916,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 2,
+    },
+    listMainButton: {
+        padding: 16,
+        paddingRight: 56,
     },
     listContent: {
         flex: 1,
@@ -626,17 +937,41 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     deleteButton: {
-        padding: 4,
-        borderRadius: 4,
+        position: "absolute",
+        top: 8,
+        right: 8,
+        borderRadius: 22,
         justifyContent: "center",
         alignItems: "center",
-        minWidth: 28,
-        minHeight: 28,
+        width: 44,
+        height: 44,
     },
     listFooter: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+    },
+    progressRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    progressText: {
+        minWidth: 112,
+        fontSize: 12,
+        fontWeight: "600",
+        fontVariant: ["tabular-nums"],
+        marginRight: 10,
+    },
+    progressTrack: {
+        flex: 1,
+        height: 6,
+        borderRadius: 3,
+        overflow: "hidden",
+    },
+    progressFill: {
+        height: "100%",
+        borderRadius: 3,
     },
     listInfo: {
         fontSize: 12,

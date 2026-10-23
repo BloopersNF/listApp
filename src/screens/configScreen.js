@@ -1,14 +1,89 @@
 import React, { useState } from "react";
-import { FlatList, Text, StyleSheet, View, SafeAreaView, TouchableOpacity, Switch, Modal, Alert, Linking } from "react-native";
+import { FlatList, Text, StyleSheet, View, SafeAreaView, TouchableOpacity, Switch, Modal, Alert, Linking, Share, Platform } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 import { useTheme } from "../context/ThemeContext";
 import { useLanguage } from "../context/LanguageContext";
+import appPackage from "../../package.json";
+import { useAds } from '../context/AdsContext';
+
+const ConfigItem = ({ item, styles, colors }) => {
+    const content = (
+        <>
+            <View style={styles.itemLeft}>
+                <View style={styles.itemIcon}>
+                    <Icon
+                        name={item.icon}
+                        size={24}
+                        color={item.isPremium ? "#FFD700" : colors.text}
+                    />
+                </View>
+                <Text style={item.isPremium ? styles.premiumText : styles.itemText}>
+                    {item.key}
+                </Text>
+            </View>
+            <View style={styles.itemRight}>
+                {item.showSwitch && (
+                    <Switch
+                        style={styles.switch}
+                        value={item.switchValue}
+                        onValueChange={item.action}
+                        trackColor={{ false: colors.border, true: colors.primary }}
+                        thumbColor={item.switchValue ? '#ffffff' : '#f4f3f4'}
+                        accessibilityLabel={item.key}
+                        accessibilityState={{ checked: item.switchValue }}
+                    />
+                )}
+                {item.showArrow && (
+                    <Icon
+                        name="right"
+                        size={16}
+                        color={colors.textTertiary}
+                    />
+                )}
+            </View>
+        </>
+    );
+
+    if (item.showSwitch) {
+        return <View style={styles.listItem}>{content}</View>;
+    }
+
+    return (
+        <TouchableOpacity
+            style={styles.listItem}
+            onPress={item.action}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+        >
+            {content}
+        </TouchableOpacity>
+    );
+};
 
 const ConfigScreen = () => {
     const { isDarkMode, toggleTheme, colors } = useTheme();
     const { selectedLanguage, languageMode, changeLanguage, setAutoLanguage, getText, availableLanguages } = useLanguage();
     const [aboutModalVisible, setAboutModalVisible] = useState(false);
     const [languageModalVisible, setLanguageModalVisible] = useState(false);
+    const { privacyOptionsRequired, busy: adsBusy, showPrivacyOptions, getAdDiagnostics } = useAds();
+    const [sharingDiagnostics, setSharingDiagnostics] = useState(false);
+
+    const handlePrivacyOptions = async () => {
+        if (adsBusy) return;
+        const result = await showPrivacyOptions();
+        if (result.status === 'error' || result.consentError) Alert.alert(getText('adsPrivacyUnavailable'));
+    };
+
+    const handleShareDiagnostics = async () => {
+        if (sharingDiagnostics) return;
+        setSharingDiagnostics(true);
+        try {
+            const diagnostics = await getAdDiagnostics();
+            await Share.share({ message: JSON.stringify({ appVersion: appPackage.version, platform: Platform.OS, ...diagnostics }, null, 2) });
+        } catch {
+            Alert.alert(getText('adsDiagnosticsUnavailable'));
+        } finally { setSharingDiagnostics(false); }
+    };
 
     const handleContactUs = () => {
         const email = getText('contactEmail');
@@ -47,6 +122,12 @@ const ConfigScreen = () => {
     ];
 
     const configItems = [
+        ...(privacyOptionsRequired ? [{
+            key: getText('adsPrivacyOptions'),
+            icon: 'Safety',
+            action: handlePrivacyOptions,
+            showArrow: true,
+        }] : []),
         {
             key: getText('language'),
             icon: "earth",
@@ -214,44 +295,9 @@ const ConfigScreen = () => {
                 <FlatList
                     data={configItems}
                     renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.listItem}
-                            onPress={item.action}
-                            activeOpacity={0.7}
-                        >
-                            <View style={styles.itemLeft}>
-                                <View style={styles.itemIcon}>
-                                    <Icon
-                                        name={item.icon}
-                                        size={24}
-                                        color={item.isPremium ? "#FFD700" : colors.text}
-                                    />
-                                </View>
-                                <Text style={item.isPremium ? styles.premiumText : styles.itemText}>
-                                    {item.key}
-                                </Text>
-                            </View>
-                            <View style={styles.itemRight}>
-                                {item.showSwitch && (
-                                    <Switch
-                                        style={styles.switch}
-                                        value={item.switchValue}
-                                        onValueChange={item.action}
-                                        trackColor={{ false: colors.border, true: colors.primary }}
-                                        thumbColor={item.switchValue ? '#ffffff' : '#f4f3f4'}
-                                    />
-                                )}
-                                {item.showArrow && (
-                                    <Icon
-                                        name="right"
-                                        size={16}
-                                        color={colors.textTertiary}
-                                    />
-                                )}
-                            </View>
-                        </TouchableOpacity>
+                        <ConfigItem item={item} styles={styles} colors={colors} />
                     )}
-                    keyExtractor={(item, index) => index.toString()}
+                    keyExtractor={(item) => item.key}
                     showsVerticalScrollIndicator={false}
                 />
             </View>
@@ -271,7 +317,7 @@ const ConfigScreen = () => {
                             {getText('appVersion')}
                         </Text>
                         <Text style={styles.modalVersion}>
-                            v{getText('version')}
+                            v{appPackage.version}
                         </Text>
 
                         <TouchableOpacity
@@ -281,6 +327,16 @@ const ConfigScreen = () => {
                             <Text style={styles.contactButtonText}>
                                 {getText('contactUs')}
                             </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.contactButton}
+                            onPress={handleShareDiagnostics}
+                            disabled={sharingDiagnostics}
+                            accessibilityRole="button"
+                            accessibilityState={{ disabled: sharingDiagnostics }}
+                        >
+                            <Text style={styles.contactButtonText}>{getText('shareDiagnostics')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity

@@ -3,6 +3,8 @@
  * Prevents floating point precision errors by working with integers (cents)
  */
 
+import { isValidPriceInput, isValidQuantityInput } from './numericInput';
+
 // Convert currency string to cents (integer)
 export const currencyToCents = (value) => {
     if (!value || value === '' || value === '0') return 0;
@@ -53,16 +55,10 @@ export const formatCurrency = (value, prefix = '$') => {
 
 // Validate currency input
 export const isValidCurrency = (value) => {
-    if (!value || value === '') return true; // Allow empty values
-    const cleanValue = value.toString().replace(/[^\d.,]/g, '');
-    const floatValue = parseFloat(cleanValue.replace(',', '.'));
-    return !isNaN(floatValue) && floatValue >= 0;
+    return isValidPriceInput(value);
 };
 
 // Validate quantity input
 export const isValidQuantity = (value) => {
-    if (!value || value === '') return true; // Allow empty values
-    const cleanValue = value.toString().replace(/[^\d.,]/g, '');
-    const floatValue = parseFloat(cleanValue.replace(',', '.'));
-    return !isNaN(floatValue) && floatValue > 0;
+    return isValidQuantityInput(value);
 };

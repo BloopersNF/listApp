@@ -9,9 +9,9 @@
             "useFrameworks": "static"
           },
           "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0",
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
             "minSdkVersion": 24
           }
         }
@@ -20,12 +20,14 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-9404218606533420~5307626712",
-          "iosAppId": "ca-app-pub-9404218606533420~5307626712"
+          "delayAppMeasurementInit": true
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "slug": "listApp",
-    "version": "1.4.3",
+    "version": "1.5.7",
+    "newArchEnabled": true,
     "orientation": "portrait",
     "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png",
     "userInterfaceStyle": "light",
@@ -38,15 +40,18 @@
       "**/*"
     ],
     "ios": {
+      "buildNumber": "9",
       "supportsTablet": true,
       "bundleIdentifier": "com.marketlist.app",
-      "icon": "./assets/Icon.png"
+      "icon": "./assets/ios-icon.png"
     },
     "android": {
+      "versionCode": 9,
       "package": "com.marketlist.app",
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.marketlist.app",
       "icon": "./assets/res/mipmap-xxxhdpi/ic_launcher.png",
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
+      "compileSdkVersion": 36,
+      "targetSdkVersion": 36,
       "minSdkVersion": 24
     },
     "web": {

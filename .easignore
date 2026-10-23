@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+
+# Expo and generated exports
+.expo/
+.tmp/
+dist/
+web-build/
+.expo-*/
+
+# Native backups and non-runtime project material
+android_backup/
+android/.gradle/
+android/.kotlin/
+android/.cxx/
+android/app/.cxx/
+android/build/
+android/app/build/
+ios/Pods/
+ios/build/
+docs/
+store-listing/
+assets/aso/
+tests/
+tools/
+
+# Native credentials and local secrets
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.env*.local
+
+# Logs and local machine files
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+*.pem
+*.tsbuildinfo
+
+# Generated store screenshots and signing material managed separately by EAS
+marketlist-screenshots/
+marketlist-screenshots.zip
+marketlist-versao-B-celular.zip
+debug.log
+credentials.json
+google-service-account.json

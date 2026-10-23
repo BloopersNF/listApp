@@ -92,8 +92,8 @@ android {
         applicationId 'com.marketlist.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "1.4.3"
+        versionCode 9
+        versionName "1.5.7"
     }
     signingConfigs {
         debug {
@@ -102,15 +102,23 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            // EAS injects the existing upload credentials into this signing config.
+            // Local production builds may instead supply these environment variables.
+            if (System.getenv('MARKETLIST_UPLOAD_STORE_FILE')) {
+                storeFile file(System.getenv('MARKETLIST_UPLOAD_STORE_FILE'))
+                storePassword System.getenv('MARKETLIST_UPLOAD_STORE_PASSWORD')
+                keyAlias System.getenv('MARKETLIST_UPLOAD_KEY_ALIAS')
+                keyPassword System.getenv('MARKETLIST_UPLOAD_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
@@ -175,3 +183,10 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// Bundle the Ant Design font used by react-native-vector-icons. Without this
+// asset Android renders the icon code points with its fallback text font.
+project.ext.vectoricons = [
+    iconFontNames: ["AntDesign.ttf"]
+]
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
