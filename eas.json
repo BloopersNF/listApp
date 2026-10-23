@@ -23,8 +23,13 @@
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
         "track": "production"
+      }
+    },
+    "production-draft": {
+      "android": {
+        "track": "production",
+        "releaseStatus": "draft"
       }
     }
   }
