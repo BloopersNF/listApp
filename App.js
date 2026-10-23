@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import StackScreen from './src/screens/stackScreen';
 import { getApps, initializeApp } from 'firebase/app';
 import { AdsProvider } from './src/context/AdsContext';
@@ -33,18 +34,20 @@ const App = () => {
   }, []);
 
   return (
-    <LanguageProvider>
-      <ThemeProvider>
-        <AdsProvider>
-          <ReviewReminder />
-          <View style={styles.container} onLayout={onLayoutRootView}>
-            <NavigationContainer>
-              <StackScreen />
-            </NavigationContainer>
-          </View>
-        </AdsProvider>
-      </ThemeProvider>
-    </LanguageProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <LanguageProvider>
+        <ThemeProvider>
+          <AdsProvider>
+            <ReviewReminder />
+            <View style={styles.container} onLayout={onLayoutRootView}>
+              <NavigationContainer>
+                <StackScreen />
+              </NavigationContainer>
+            </View>
+          </AdsProvider>
+        </ThemeProvider>
+      </LanguageProvider>
+    </SafeAreaProvider>
   );
 }
 export default App;
