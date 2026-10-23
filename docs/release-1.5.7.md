@@ -4,11 +4,11 @@
 
 ### Português (Brasil)
 
-Melhoramos o carregamento e a estabilidade dos anúncios. Os anúncios de tela cheia passam a respeitar a conclusão da compra, sem interromper a abertura das listas. Novos controles de privacidade quando aplicáveis e melhorias gerais de estabilidade.
+Tela inicial mais limpa, com acesso direto às suas listas. Melhoramos o carregamento dos anúncios, que respeitam a conclusão da compra, e adicionamos controles de privacidade quando aplicáveis.
 
 ### English
 
-Improved ad loading and stability. Full-screen ads now respect completed shopping sessions without interrupting list opening. Added privacy controls where applicable and general stability improvements.
+A cleaner home screen with direct access to your lists. Improved ad loading, full-screen ads that respect completed shopping sessions, and privacy controls where applicable.
 
 ## Validação
 
@@ -24,10 +24,11 @@ Improved ad loading and stability. Full-screen ads now respect completed shoppin
 - AdMob: app pronto, veiculação ativada e Central de políticas sem problemas ou limitações. `app-ads.txt` encontrado e verificado, com 100% das consultas autorizadas. Banner com refresh otimizado pelo Google e piso “Todos os preços”.
 - Ajustada a área segura para evitar sobreposição do banner e dos controles com as barras do sistema no Android recente.
 - O iOS permanece sem monetização até receber seus próprios IDs.
-- O canal padrão do projeto no Google Play é teste interno.
+- O canal de publicação foi alterado para produção conforme autorização do usuário.
+- Removido o bloco introdutório do topo da Home, tanto com listas existentes quanto no estado inicial vazio.
 
 As métricas comerciais devem ser acompanhadas no AdMob após distribuição e propagação das configurações. Testes de integração não comprovam demanda nem aumento de receita.
 
 ## Estado da distribuição
 
-O envio do código ao Expo/EAS para gerar o AAB assinado está aguardando autorização explícita solicitada pela revisão automática de permissões. Ainda não foi criada uma nova release no Google Play. A configuração de submissão existente aponta para teste interno.
+Usuário autorizou explicitamente o envio do código ao projeto Expo/EAS da conta bloopersnf para compilar e assinar o AAB Android, seguido de publicação em produção no Google Play. A remoção do bloco introdutório da Home integra o mesmo pacote 1.5.7 (9).

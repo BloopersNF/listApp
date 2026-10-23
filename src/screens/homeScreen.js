@@ -285,25 +285,6 @@ const HomeScreen = ({ navigation }) => {
         </View>
     );
 
-    const renderValueProposition = () => (
-        <View
-            style={[styles.valueProposition, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
-            testID="home-value-proposition"
-        >
-            <View style={[styles.valuePropositionIcon, { backgroundColor: colors.primary + '15' }]}>
-                <Icon name="calculator" size={24} color={colors.primary} />
-            </View>
-            <View style={styles.valuePropositionCopy}>
-                <Text style={[styles.valuePropositionTitle, { color: colors.text }]}>
-                    {getText('homeValueTitle')}
-                </Text>
-                <Text style={[styles.valuePropositionSubtitle, { color: colors.textSecondary }]}>
-                    {getText('homeValueSubtitle')}
-                </Text>
-            </View>
-        </View>
-    );
-
     const renderSearch = () => (
         <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
             <Icon name="search1" size={20} color={colors.textSecondary} />
@@ -332,13 +313,6 @@ const HomeScreen = ({ navigation }) => {
         </View>
     );
 
-    const renderListHeader = () => (
-        <>
-            {renderValueProposition()}
-            {renderSearch()}
-        </>
-    );
-
     const renderSearchEmptyState = () => (
         <View style={styles.searchEmptyState} testID="home-list-search-empty">
             <Icon name="search1" size={42} color={colors.textTertiary} />
@@ -363,7 +337,6 @@ const HomeScreen = ({ navigation }) => {
 
     const renderEmptyState = () => (
         <View style={styles.emptyState}>
-            {renderValueProposition()}
             <View style={[styles.emptyIconContainer, { backgroundColor: colors.primary + '15' }]}>
                 <Icon name="shoppingcart" size={42} color={colors.primary} />
             </View>
@@ -531,7 +504,7 @@ const HomeScreen = ({ navigation }) => {
                 removeClippedSubviews={true}
                 contentContainerStyle={[styles.listContainer, lists.length === 0 && styles.emptyListContainer]}
                 ListEmptyComponent={lists.length === 0 ? renderEmptyState : renderSearchEmptyState}
-                    ListHeaderComponent={lists.length > 0 ? renderListHeader : null}
+                    ListHeaderComponent={lists.length > 0 ? renderSearch : null}
                     ListFooterComponent={lists.length > 0 && !isSearching ? renderTemplateFooter : null}
                 />
             )}
@@ -623,37 +596,6 @@ const styles = StyleSheet.create({
     emptyListContainer: {
         flexGrow: 1,
         justifyContent: "center",
-    },
-    valueProposition: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderRadius: 14,
-        padding: 16,
-        marginHorizontal: 16,
-        marginTop: 16,
-        marginBottom: 8,
-    },
-    valuePropositionIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 14,
-    },
-    valuePropositionCopy: {
-        flex: 1,
-    },
-    valuePropositionTitle: {
-        fontSize: 17,
-        lineHeight: 22,
-        fontWeight: "700",
-        marginBottom: 4,
-    },
-    valuePropositionSubtitle: {
-        fontSize: 14,
-        lineHeight: 20,
     },
     searchContainer: {
         minHeight: 48,
